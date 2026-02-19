@@ -181,7 +181,6 @@ async function spawnViaTaskMan(
  */
 function buildTaskManMessage(task: any, context: string): string {
   const settings = getSystemSettings()
-  const progressHelper = path.join(PROGRESS_DIR, `${task.id}-progress.js`)
   
   return `[DASHBOARD] Task Request
 ID: ${task.id}
@@ -191,55 +190,14 @@ Description: ${task.description || task.title}
 TargetAgent: ${task.agentId || 'coder'}
 Model: ${settings.taskModel}
 Thinking: ${settings.taskThinking}
-ProgressHelper: ${progressHelper}
 
-⚠️ CRITICAL INSTRUCTIONS:
-
-1. PROGRESS TRACKING (REQUIRED):
-You MUST report progress at each step using:
-\`\`\`
-exec: {"command": "node ${progressHelper} 20 '📝 Step 1: Analyzing requirements'"}
-\`\`\`
-
-Progress checkpoints:
-- 20%: Analyzing requirements and reading memory
-- 40%: Planning implementation
-- 60%: Writing code/creating content
-- 80%: Verifying and testing
-- 100%: Task completed
-
-2. MEMORY MANAGEMENT:
-- Read MEMORY.md before starting
-- Update MEMORY.md after completing
-
-3. TASK COMPLETION:
-When done, provide a COMPLETE SUMMARY including:
-- What was accomplished (bullet points)
-- Files created with paths and sizes
-- Key points/moral lessons
-- Full deliverables list
-
-Example completion format:
-"""
-✅ Task Completed Successfully
-
-I have created [filename] with [description].
-
-What was accomplished:
-✅ Read MEMORY.md to check project context
-✅ Created [file] with [content description]
-✅ Verified file content
-✅ Updated MEMORY.md with the new task entry
-
-[Content Summary]:
-[Detailed description of what was created]
-
-Deliverables:
-[full path] - [size in bytes]
-"""
+INSTRUCTIONS:
+1. Use sessions_spawn to create a worker agent
+2. Worker will complete the task and create files
+3. When worker finishes, report back the result to me (TaskMan)
 
 Task Context:
-${context.substring(0, 800)}`
+${context.substring(0, 600)}`
 }
 
 // =====================================================
@@ -412,8 +370,6 @@ function buildTaskContext(task: any, agentConfig: AgentConfig, project: any): st
   const memoryFilePath = path.join(projectPath, 'MEMORY.md')
   const projectMemory = readMemorySync(task.projectId)
   const formattedMemory = formatMemoryForPrompt(projectMemory)
-  const contextDir = path.join(process.cwd(), 'data', 'task-contexts')
-  const statusFilePath = path.join(contextDir, `${task.id}-worker-status.json`)
   
   return `## Task: ${task.title}
 
@@ -428,33 +384,6 @@ ${projectPath}
 - read - Read files
 - edit - Edit files
 - exec - Execute commands
-
-### ⚠️ CRITICAL: Status File Tracking (MANDATORY)
-You MUST update the status file at EVERY progress step!
-
-Status file location: 
-\`\`\`
-${statusFilePath}
-\`\`\`
-
-**At each progress step, write to the status file:**
-\`\`\`
-write: {"file_path": "${statusFilePath}", "content": "{\\"percentage\\": 20, \\"message\\": \\"📝 Analyzing requirements...\\", \\"status\\": \\"processing\\", \\"timestamp\\": \\"${new Date().toISOString()}\\"}"}
-\`\`\`
-
-Progress checkpoints (REQUIRED):
-- 20% - Analyzing requirements and reading memory
-- 40% - Planning implementation approach
-- 60% - Writing code/creating content
-- 80% - Verifying and testing
-- 100% - Task completed
-
-**⚠️ CRITICAL: When task is COMPLETE, you MUST write final status with FULL RESULT:**
-\`\`\`
-write: {"file_path": "${statusFilePath}", "content": "{\\"percentage\\": 100, \\"message\\": \\"✅ Task completed successfully\\", \\"status\\": \\"completed\\", \\"result\\": \\"✅ Task Completed Successfully\\n\\nI have created [filename] with [description].\\n\\nWhat was accomplished:\\n✅ Step 1: Description\\n✅ Step 2: Description\\n✅ Step 3: Description\\n\\nDeliverables:\\n[full path] - [size]\\n\\nSummary: [Detailed description of the work done]\\", \\"artifacts\\": [\\"filename1\\", \\"filename2\\"], \\"timestamp\\": \\"${new Date().toISOString()}\\"}"}
-\`\`\`
-
-**The "result" field is REQUIRED and must contain the FULL SUMMARY of your work!**
 
 ### Memory Management
 **BEFORE starting:**
