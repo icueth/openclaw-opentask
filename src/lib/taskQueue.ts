@@ -282,7 +282,7 @@ export function cleanupZombieTasks(): number {
       if (task.title?.startsWith('🔄 [Pipeline]') && !task.description?.includes('Step ID:')) {
         // Check if pipeline was created recently (give it time to spawn child tasks)
         const taskAge = Date.now() - new Date(task.createdAt).getTime()
-        if (taskAge < 30000) { // 30 seconds grace period
+        if (taskAge < 180000) { // 3 minutes grace period
           console.log(`[Zombie Cleanup] Pipeline ${task.id} is new (${Math.round(taskAge/1000)}s), skipping cleanup`)
           return
         }

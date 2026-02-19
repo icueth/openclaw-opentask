@@ -1503,7 +1503,7 @@
     "maxRetries": 2,
     "timeoutMinutes": 30,
     "id": "task-1771520945389-tokf99pdu",
-    "status": "failed",
+    "status": "completed",
     "createdAt": "2026-02-19T17:09:05.389Z",
     "statusHistory": [
       {
@@ -1545,6 +1545,11 @@
         "status": "failed",
         "timestamp": "2026-02-19T17:09:32.646Z",
         "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T17:24:40.466Z",
+        "message": "Task completed successfully. Created: hashpassword.go, hashpassword_test.go"
       }
     ],
     "retryCount": 0,
