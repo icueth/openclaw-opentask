@@ -1,22 +1,26 @@
-# bcrypt vs crypto.scrypt Comparison
+# Password Hashing Comparison: bcrypt vs scrypt vs PBKDF2-SHA256
 
 ## Overview
 
-This project provides two password hashing implementations:
+This project provides three password hashing implementations:
 - **V1**: `hashPassword.js` - Uses bcrypt (external dependency)
 - **V2**: `hashPassword-v2.js` - Uses Node.js native crypto.scrypt (no dependencies)
+- **V3**: `hashPassword-v3.js` - Uses PBKDF2 with SHA256 (FIPS-compliant, widely supported)
 
 ## Quick Comparison
 
-| Feature | bcrypt (V1) | crypto.scrypt (V2) |
-|---------|-------------|---------------------|
-| **Dependencies** | Requires `bcrypt` package | Native Node.js `crypto` module |
-| **Algorithm Type** | Blowfish-based | Memory-hard (PBKDF2 successor) |
-| **Memory Hard** | No | Yes (resistant to GPU/ASIC) |
-| **Storage Format** | `$2b$10$...` | `scrypt$N$salt$hash` |
-| **Salt Rounds** | Configurable (default: 10) | Configurable N (default: 16384) |
-| **Timing Safe** | Yes | Yes (crypto.timingSafeEqual) |
-| **Bundle Size** | Larger (native addon) | Zero additional size |
+| Feature | bcrypt (V1) | crypto.scrypt (V2) | PBKDF2-SHA256 (V3) |
+|---------|-------------|---------------------|---------------------|
+| **Dependencies** | Requires `bcrypt` package | Native Node.js `crypto` | Native Node.js `crypto` |
+| **Algorithm Type** | Blowfish-based | Memory-hard | CPU-hard (iterative) |
+| **Memory Hard** | No | Yes (~16MB) | No |
+| **GPU Resistant** | Partial | Strong | Partial |
+| **Storage Format** | `$2b$10$...` | `scrypt$N$salt$hash` | `pbkdf2_sha256$iter$salt$hash` |
+| **Default Work Factor** | 10 rounds | N=16384 | 100,000 iterations |
+| **Timing Safe** | Yes | Yes | Yes |
+| **Bundle Size** | Larger (native addon) | Zero additional | Zero additional |
+| **FIPS Compliant** | No | No | Yes |
+| **Industry Standard** | Widely used | Modern alternative | NIST recommended |
 
 ## When to Use Which
 
@@ -33,6 +37,13 @@ This project provides two password hashing implementations:
 - **Future-proofing** - scrypt is designed to be more resistant to hardware attacks
 - **Modern Node.js** environments (scrypt available since Node 10.5.0)
 
+### Use PBKDF2-SHA256 (V3) when:
+- **FIPS compliance** is required (PBKDF2 is NIST-approved)
+- **Interoperability** with systems that expect PBKDF2 (e.g., Django, some enterprise systems)
+- **Widely supported** - PBKDF2 is available in virtually every crypto library
+- **Configurable iteration count** - easy to adjust as hardware improves
+- **Educational purposes** - understanding key stretching concepts
+
 ## Security Considerations
 
 ### bcrypt
@@ -45,24 +56,33 @@ This project provides two password hashing implementations:
 - **Cons**: Newer (less audit history), requires more memory
 - **Best for**: High-security applications, environments where memory is cheaper than CPU
 
+### PBKDF2-SHA256
+- **Pros**: FIPS/NIST compliant, widely supported, easy to understand and implement
+- **Cons**: Not memory-hard, vulnerable to GPU attacks, requires high iterations to be secure
+- **Best for**: FIPS compliance, interoperability with existing systems
+
 ## Performance
 
-| Metric | bcrypt (10 rounds) | scrypt (N=16384) |
-|--------|-------------------|------------------|
-| Hash time | ~50-100ms | ~20-30ms |
-| Memory usage | Low (~4KB) | Medium (~16MB) |
-| Parallel hashing | Good | Limited by memory |
+| Metric | bcrypt (10 rounds) | scrypt (N=16384) | PBKDF2 (100k iter) |
+|--------|-------------------|------------------|---------------------|
+| Hash time | ~50-100ms | ~20-30ms | ~30-50ms |
+| Memory usage | Low (~4KB) | Medium (~16MB) | Low (~4KB) |
+| Parallel hashing | Good | Limited by memory | Excellent |
 
 ## Migration Notes
 
-- Both versions use **different hash formats** - they are NOT interchangeable
-- You cannot verify a bcrypt hash with scrypt or vice versa
-- For migration: hash new passwords with preferred method, maintain both for verification
+- All three versions use **different hash formats** - they are NOT interchangeable
+- You cannot verify a bcrypt hash with scrypt/PBKDF2 or vice versa
+- Each version can detect and reject hashes from other versions (algorithm check)
+- For migration: hash new passwords with preferred method, maintain all for verification
 
 ## Recommendation
 
 For **new projects**:
-- Choose **V2 (scrypt)** if you want zero dependencies and modern security
-- Choose **V1 (bcrypt)** if you need maximum compatibility and audit history
+- Choose **V2 (scrypt)** if you want zero dependencies and maximum GPU resistance
+- Choose **V1 (bcrypt)** if you need maximum compatibility and battle-tested history
+- Choose **V3 (PBKDF2)** if you need FIPS compliance or specific interoperability
 
-Both are secure choices when configured properly.
+**Security ranking**: V2 (scrypt) > V1 (bcrypt) ≥ V3 (PBKDF2 with sufficient iterations)
+
+All are secure choices when configured properly.

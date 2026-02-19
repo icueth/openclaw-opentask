@@ -1350,5 +1350,64 @@
     "error": "Process died or was killed",
     "completedAt": "2026-02-19T13:35:21.625Z",
     "assignedAgent": "agent:coordinator:subagent:089c809c-b869-4e8a-9b98-41163305948a"
+  },
+  {
+    "projectId": "a3",
+    "title": "Create Hash Password Function v3",
+    "description": "สร้าง function hashpassword javascript แบบใช้ sha256",
+    "agentId": "taskman",
+    "priority": "high",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771508314098-2lugd3b94",
+    "status": "failed",
+    "createdAt": "2026-02-19T13:38:34.098Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T13:38:34.098Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T13:38:34.099Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T13:38:34.100Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T13:38:34.101Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T13:38:34.103Z",
+        "message": "Contacting TaskMan..."
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T13:38:38.911Z",
+        "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T13:39:07.960Z",
+        "message": "Worker spawned via TaskMan"
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T13:39:38.926Z",
+        "message": "Agent process terminated unexpectedly"
+      }
+    ],
+    "retryCount": 0,
+    "startedAt": "2026-02-19T13:38:34.103Z",
+    "error": "Process died or was killed",
+    "completedAt": "2026-02-19T13:38:38.911Z",
+    "assignedAgent": "agent:coordinator:subagent:54c0862f-e700-4f57-8efb-bc39c9cff83b"
   }
 ]

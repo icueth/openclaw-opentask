@@ -376,18 +376,48 @@ export function cleanupZombieTasks(): number {
         // For TaskMan/Coordinator-spawned tasks: check if worker is still running via subagent tracking
         if (!completedSuccessfully && (task.assignedAgent?.includes('taskman') || task.assignedAgent?.includes('subagent'))) {
           console.log(`[Zombie Cleanup] Task ${task.id} used TaskMan, checking worker status...`)
-          // TaskMan exits after spawning worker, so we need to check worker log instead
+          
+          // Check 1: Log file contains completion message
           const logFile = path.join(process.cwd(), 'data', 'task-contexts', `${task.id}.log`)
           if (fs.existsSync(logFile)) {
             try {
               const log = fs.readFileSync(logFile, 'utf-8')
               if (log.includes('completed') || log.includes('สำเร็จ') || log.includes('Task completed')) {
                 completedSuccessfully = true
-                console.log(`[Zombie Cleanup] Task ${task.id} worker completed successfully`)
+                console.log(`[Zombie Cleanup] Task ${task.id} worker completed successfully (log)`)
                 updateTaskStatus(task.id, 'completed', 'Task completed via TaskMan worker')
               }
             } catch (e) {
               // Log file read error
+            }
+          }
+          
+          // Check 2: Project has new files created (worker actually did work)
+          if (!completedSuccessfully) {
+            const project = require('./store').store.getProjectById(task.projectId)
+            if (project?.path && fs.existsSync(project.path)) {
+              try {
+                const files = fs.readdirSync(project.path)
+                const jsFiles = files.filter((f: string) => f.endsWith('.js') || f.endsWith('.ts'))
+                if (jsFiles.length > 0) {
+                  // Check if any JS file was modified after task started
+                  const taskStartTime = new Date(task.startedAt || task.createdAt).getTime()
+                  const recentFiles = jsFiles.filter((f: string) => {
+                    try {
+                      const stat = fs.statSync(path.join(project.path, f))
+                      return stat.mtime.getTime() > taskStartTime
+                    } catch (e) { return false }
+                  })
+                  
+                  if (recentFiles.length > 0) {
+                    completedSuccessfully = true
+                    console.log(`[Zombie Cleanup] Task ${task.id} worker completed successfully (files: ${recentFiles.join(', ')})`)
+                    updateTaskStatus(task.id, 'completed', `Task completed. Created: ${recentFiles.join(', ')}`)
+                  }
+                }
+              } catch (e) {
+                // Project read error
+              }
             }
           }
         }
