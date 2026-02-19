@@ -108,13 +108,43 @@ async function spawnViaTaskMan(
     const response = stdout + stderr
     logSpawnEvent('COORDINATOR_RESPONSE', 'Coordinator response', { response: response.substring(0, 500) })
     
-    // Check if sessions_spawn was successful
+    // Check if TaskMan/worker completed successfully
+    const isCompleted = response.includes('Task Completed') || 
+                        response.includes('Task completed successfully') ||
+                        response.includes('✅ Task Completed') ||
+                        response.includes('just completed successfully')
+    
+    if (isCompleted) {
+      // Extract the result/summary from response
+      const resultMatch = response.match(/Result:\s*([\s\S]+?)(?=Stats:|$)/i) ||
+                         response.match(/✅\s*Task Completed Successfully\s*([\s\S]+?)(?=Stats:|$)/i)
+      
+      const result = resultMatch ? resultMatch[1].trim() : response.substring(0, 500)
+      
+      // Update task with result immediately
+      updateTaskStatus(task.id, 'completed', `✅ ${result}`)
+      
+      return {
+        success: true,
+        sessionKey: 'taskman-direct-complete'
+      }
+    }
+    
+    // Check if sessions_spawn was successful (worker spawned but not yet completed)
     if (response.includes('sessions_spawn') || response.includes('Worker agent spawned') || response.includes('subagent')) {
       writeTaskProgressFile(task.id, 20, '🚀 Worker spawned via sessions_spawn')
       
       // Extract session key if available
-      const sessionMatch = response.match(/subagent:([a-f0-9-]+)/)
-      const sessionKey = sessionMatch ? `agent:coordinator:subagent:${sessionMatch[1]}` : undefined
+      const sessionMatch = response.match(/subagent:([a-f0-9-]+)/i) ||
+                          response.match(/Session:\s*`?(agent:[^`]+)`?/i)
+      const sessionKey = sessionMatch ? (sessionMatch[1].includes('agent:') ? sessionMatch[1] : `agent:coordinator:subagent:${sessionMatch[1]}`) : undefined
+      
+      // Store the initial response for later reference
+      store.set(`taskman:${task.id}:response`, {
+        initialResponse: response.substring(0, 1000),
+        spawnedAt: new Date().toISOString(),
+        sessionKey
+      })
       
       return {
         success: true,
@@ -151,6 +181,7 @@ async function spawnViaTaskMan(
  */
 function buildTaskManMessage(task: any, context: string): string {
   const settings = getSystemSettings()
+  const progressHelper = path.join(PROGRESS_DIR, `${task.id}-progress.js`)
   
   return `[DASHBOARD] Task Request
 ID: ${task.id}
@@ -160,23 +191,55 @@ Description: ${task.description || task.title}
 TargetAgent: ${task.agentId || 'coder'}
 Model: ${settings.taskModel}
 Thinking: ${settings.taskThinking}
+ProgressHelper: ${progressHelper}
 
-⚠️ IMPORTANT: This task requires MEMORY MANAGEMENT
+⚠️ CRITICAL INSTRUCTIONS:
 
-Before spawning the worker:
-1. Read MEMORY.md from the project
-2. Include relevant context in the worker's task
+1. PROGRESS TRACKING (REQUIRED):
+You MUST report progress at each step using:
+\`\`\`
+exec: {"command": "node ${progressHelper} 20 '📝 Step 1: Analyzing requirements'"}
+\`\`\`
 
-After the worker completes:
-3. Update MEMORY.md with the task results
-4. Log key decisions and learnings
+Progress checkpoints:
+- 20%: Analyzing requirements and reading memory
+- 40%: Planning implementation
+- 60%: Writing code/creating content
+- 80%: Verifying and testing
+- 100%: Task completed
 
-Please use sessions_spawn to create a worker agent for this task.
-The worker should use the specified Model and Thinking level.
-Ensure the worker reads and updates MEMORY.md.
+2. MEMORY MANAGEMENT:
+- Read MEMORY.md before starting
+- Update MEMORY.md after completing
+
+3. TASK COMPLETION:
+When done, provide a COMPLETE SUMMARY including:
+- What was accomplished (bullet points)
+- Files created with paths and sizes
+- Key points/moral lessons
+- Full deliverables list
+
+Example completion format:
+"""
+✅ Task Completed Successfully
+
+I have created [filename] with [description].
+
+What was accomplished:
+✅ Read MEMORY.md to check project context
+✅ Created [file] with [content description]
+✅ Verified file content
+✅ Updated MEMORY.md with the new task entry
+
+[Content Summary]:
+[Detailed description of what was created]
+
+Deliverables:
+[full path] - [size in bytes]
+"""
 
 Task Context:
-${context.substring(0, 1000)}`
+${context.substring(0, 800)}`
 }
 
 // =====================================================

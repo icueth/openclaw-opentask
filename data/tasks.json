@@ -1738,5 +1738,58 @@
     "startedAt": "2026-02-19T17:37:15.399Z",
     "assignedAgent": "agent:coordinator:subagent:546e95e0-4fc7-41dd-8cca-9583b4df9382",
     "completedAt": "2026-02-19T17:37:41.943Z"
+  },
+  {
+    "projectId": "a3",
+    "title": "สร้างไฟล์ aaa.md และเนื้อหาคือ นิทานสั้นๆสักเรื่อง",
+    "description": "สร้างไฟล์ aaa.md และเนื้อหาคือ นิทานสั้นๆสักเรื่อง",
+    "agentId": "taskman",
+    "priority": "medium",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771523835237-8chqippr1",
+    "status": "failed",
+    "createdAt": "2026-02-19T17:57:15.237Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T17:57:15.237Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T17:57:15.240Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T17:57:15.242Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T17:57:15.244Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T17:57:15.248Z",
+        "message": "Contacting TaskMan..."
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T17:57:38.831Z",
+        "message": "Worker spawned via TaskMan"
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T18:00:15.747Z",
+        "message": "Task process ended without creating output files"
+      }
+    ],
+    "retryCount": 0,
+    "startedAt": "2026-02-19T17:57:15.248Z",
+    "assignedAgent": "agent:coordinator:subagent:ce758407-adc8-46ce-b0de-ddd4912f1f6f",
+    "completedAt": "2026-02-19T18:00:15.747Z"
   }
 ]
