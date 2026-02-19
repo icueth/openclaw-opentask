@@ -1,12 +1,11 @@
 /**
  * Task Runner - OpenClaw Core Native
- * Uses openclaw CLI for sub-agents
+ * Uses openclaw CLI for sub-agents with proper progress tracking
  */
 
-import { spawn, exec } from 'child_process'
+import { spawn } from 'child_process'
 import fs from 'fs'
 import path from 'path'
-import { promisify } from 'util'
 import { store } from './store'
 import { 
   updateTaskStatus, 
@@ -17,8 +16,6 @@ import {
   formatMemoryForPrompt
 } from './memory'
 import { logSpawnEvent } from './spawnLogger'
-
-const execAsync = promisify(exec)
 
 // Default workspace
 const DEFAULT_WORKSPACE_PATH = path.join(process.env.HOME || '', '.openclaw', 'workspace-coder')
@@ -95,6 +92,8 @@ function getAgentConfig(agentId: string): AgentConfig | null {
 
 function buildTaskContext(task: any, agentConfig: AgentConfig, project: any): string {
   const projectPath = project?.path || path.join(DEFAULT_WORKSPACE_PATH, 'projects', task.projectId)
+  const contextDir = path.join(process.cwd(), 'data', 'task-contexts')
+  const progressHelperPath = path.join(contextDir, `${task.id}-progress.js`)
   
   // Read project memory
   const projectMemory = readMemorySync(task.projectId)
@@ -145,25 +144,27 @@ ${task.description || task.title}
 
 ## 📊 PROGRESS TRACKING (CRITICAL - DO THIS!)
 
-You MUST report progress every 20%:
+⚠️ **YOU MUST REPORT PROGRESS FREQUENTLY** ⚠️
 
-**Usage:**
+Use this command to report progress:
 \`\`\`
-exec: {"command": "curl -s -X POST http://localhost:3000/api/projects/${task.projectId}/tasks/${task.id}/progress -H 'Content-Type: application/json' -d '{"percentage": 20, "message": "📝 Working..."}'"}
+exec: {"command": "node ${progressHelperPath} 20 '📝 กำลังวิเคราะห์ requirements'"}
 \`\`\`
 
-**Progress checkpoints:**
-- **20%** - Started, analyzing requirements
-- **40%** - Created first files
-- **60%** - Main implementation
-- **80%** - Testing, finalizing
-- **100%** - Completed
+Change the percentage (20, 40, 60, 80, 100) and message as you work:
+- **20%** - เริ่มต้น, วิเคราะห์ requirements
+- **40%** - สร้างไฟล์แรก, setup project  
+- **60%** - ทำงานหลัก, implement features
+- **80%** - แก้ไข, finalize, test
+- **100%** - เสร็จสมบูรณ์
+
+**REPORT PROGRESS AFTER EVERY SIGNIFICANT STEP!**
 
 ## 📤 Task Completion
 
 When done, call complete API:
 \`\`\`
-exec: {"command": "curl -s -X POST http://localhost:3000/api/projects/${task.projectId}/tasks/${task.id}/complete -H 'Content-Type: application/json' -d '{"result": "Summary of work done", "artifacts": ["filename.js"]}'"}
+exec: {"command": "curl -s -X POST http://localhost:3000/api/projects/${task.projectId}/tasks/${task.id}/complete -H 'Content-Type: application/json' -d '{"result": "สรุปงานที่ทำ: 1. สร้างไฟล์อะไรบ้าง 2. ทำอะไรไปบ้าง 3. ผลลัพธ์เป็นอย่างไร", "artifacts": ["filename.js"]}'"}
 \`\`\`
 
 ## 📚 PROJECT MEMORY
@@ -208,21 +209,31 @@ async function spawnViaCli(
     // Write progress helper
     const progressFile = path.join(contextDir, `${task.id}.progress`)
     const progressHelperPath = path.join(contextDir, `${task.id}-progress.js`)
-    const progressHelperScript = `
+    const progressHelperScript = `#!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
 const progressFile = '${progressFile}';
+
 function writeProgress(pct, msg) {
-  fs.mkdirSync(path.dirname(progressFile), { recursive: true });
-  fs.writeFileSync(progressFile, JSON.stringify({
-    percentage: parseInt(pct),
-    message: msg,
-    timestamp: Date.now()
-  }));
-  console.log('[PROGRESS]', pct + '% - ' + msg);
+  try {
+    fs.mkdirSync(path.dirname(progressFile), { recursive: true });
+    fs.writeFileSync(progressFile, JSON.stringify({
+      percentage: parseInt(pct),
+      message: msg,
+      timestamp: Date.now()
+    }));
+    console.log('[PROGRESS]', pct + '% - ' + msg);
+  } catch (e) {
+    console.error('[PROGRESS ERROR]', e.message);
+  }
 }
+
 const [,, pct, msg] = process.argv;
-writeProgress(pct, msg);
+if (pct && msg) {
+  writeProgress(pct, msg);
+} else {
+  console.log('Usage: node progress.js <percentage> <message>');
+}
 `
     fs.writeFileSync(progressHelperPath, progressHelperScript)
     fs.chmodSync(progressHelperPath, 0o755)

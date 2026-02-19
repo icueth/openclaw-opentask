@@ -88,5 +88,53 @@
     "retryCount": 0,
     "error": "Gateway error: 405 - Method Not Allowed",
     "completedAt": "2026-02-19T09:04:26.157Z"
+  },
+  {
+    "projectId": "a2",
+    "title": "ทดสอบ3",
+    "description": "เขียน function random password js",
+    "agentId": "coder",
+    "priority": "medium",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771493288846-noovrmhw3",
+    "status": "completed",
+    "createdAt": "2026-02-19T09:28:08.846Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T09:28:08.846Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T09:28:08.847Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T09:28:08.847Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T09:28:08.847Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T09:28:08.854Z",
+        "message": "Sub-agent spawned and processing"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T09:29:40.000Z",
+        "message": "✅ Task completed"
+      }
+    ],
+    "retryCount": 0,
+    "assignedAgent": "coder:66547",
+    "startedAt": "2026-02-19T09:28:08.854Z",
+    "completedAt": "2026-02-19T09:29:40.000Z"
   }
 ]
