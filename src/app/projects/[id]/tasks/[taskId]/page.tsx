@@ -19,6 +19,7 @@ import {
   BookOpen
 } from 'lucide-react'
 import { shouldShowGitPushButton, getArtifactFileList } from '@/lib/gitTask'
+import WorkerPoolButton from '@/components/WorkerPoolButton'
 import Link from 'next/link'
 
 export default function TaskDetailPage() {
@@ -322,6 +323,17 @@ export default function TaskDetailPage() {
 
             {/* Right - Actions */}
             <div className="flex items-center gap-2">
+              {/* Worker Pool - Show for active/processing tasks */}
+              {(task.status === 'active' || task.status === 'processing' || task.status === 'pending') && (
+                <WorkerPoolButton
+                  taskId={taskId}
+                  projectId={projectId}
+                  onPoolCreated={(data) => {
+                    alert(`Created ${data.workers.length} workers! Check SHARED_CONTEXT.md for progress.`)
+                    fetchTask()
+                  }}
+                />
+              )}
               {canStart && (
                 <NeonButton
                   size="sm"

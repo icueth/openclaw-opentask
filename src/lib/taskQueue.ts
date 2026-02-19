@@ -293,8 +293,34 @@ export function cleanupZombieTasks(): number {
           (t.status === 'processing' || t.status === 'active' || t.status === 'pending')
         )
         
-        // Skip pipeline tracking tasks
-        return
+        // Get completed child tasks to trigger pipeline advancement
+        const completedChildTasks = tasks.filter(t =>
+          t.description?.includes(`Parent Task: ${task.id}`) &&
+          t.status === 'completed' &&
+          t.description?.includes('Step ID:')
+        )
+        
+        // Trigger pipeline advancement for completed child tasks
+        if (completedChildTasks.length > 0) {
+          console.log(`[Zombie Cleanup] Found ${completedChildTasks.length} completed child tasks for pipeline ${task.id}`)
+          for (const childTask of completedChildTasks) {
+            const stepMatch = childTask.description.match(/Step ID: ([a-zA-Z0-9-]+)/)
+            if (stepMatch) {
+              const stepId = stepMatch[1]
+              console.log(`[Zombie Cleanup] Triggering pipeline advancement for step ${stepId}`)
+              const { checkStepCompletion } = require('./pipelineRunner')
+              checkStepCompletion(task.projectId, task.id, stepId).then((advanced: boolean) => {
+                console.log(`[Zombie Cleanup] Pipeline advancement for step ${stepId}: ${advanced ? 'succeeded' : 'not ready'}`)
+              }).catch((err: any) => {
+                console.error(`[Zombie Cleanup] Pipeline advancement failed:`, err)
+              })
+            }
+          }
+        }
+        
+        // DO NOT mark pipeline parent tasks as completed here
+        // Let checkStepCompletion handle that when all steps are truly done
+        return // Skip normal zombie check for pipeline tracking tasks
       }
 
       const pidFile = path.join(process.cwd(), 'data', 'task-contexts', `${task.id}.pid`)
@@ -326,6 +352,21 @@ export function cleanupZombieTasks(): number {
               console.log(`[Zombie Cleanup] Task ${task.id} completed successfully before exit, marking as completed`)
               updateTaskStatus(task.id, 'completed', progress.message || 'Task completed successfully')
               
+              // Trigger pipeline advancement if this is a pipeline step task
+              if (task.description?.includes('Parent Task:') && task.description?.includes('Step ID:')) {
+                const parentMatch = task.description.match(/Parent Task: ([a-zA-Z0-9-]+)/)
+                const stepMatch = task.description.match(/Step ID: ([a-zA-Z0-9-]+)/)
+                if (parentMatch && stepMatch) {
+                  const parentTaskId = parentMatch[1]
+                  const stepId = stepMatch[1]
+                  console.log(`[Zombie Cleanup] Triggering pipeline advancement for parent ${parentTaskId}, step ${stepId}`)
+                  // Import and call checkStepCompletion
+                  const { checkStepCompletion } = require('./pipelineRunner')
+                  checkStepCompletion(task.projectId, parentTaskId, stepId).catch((err: any) => {
+                    console.error(`[Zombie Cleanup] Failed to advance pipeline:`, err)
+                  })
+                }
+              }
             }
           } catch (e) {
             // Progress file invalid, treat as failed

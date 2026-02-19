@@ -1,12 +1,8 @@
-# OpenClaw OpenTask
+# OpenClaw Dashboard
 
-A futuristic web dashboard for managing OpenClaw agents. Built with Next.js, TypeScript, and Tailwind CSS.
+A comprehensive, futuristic dashboard for monitoring and managing your OpenClaw instance. Built with Next.js, TypeScript, and Tailwind CSS.
 
-**Created by:** [iCue](https://github.com/icueth)
-
-[![Donate](https://img.shields.io/badge/Donate-Support%20Development-blue?style=for-the-badge&logo=stripe)](https://buy.stripe.com/14A28sbLa5mJ8SM5qY2VG01)
-
-![Dashboard](https://via.placeholder.com/800x400/0a0a0f/3b82f6?text=OpenClaw+OpenTask)
+![Dashboard](https://via.placeholder.com/800x400/0a0a0f/3b82f6?text=OpenClaw+Dashboard)
 
 ## ✨ Features
 
@@ -14,18 +10,31 @@ A futuristic web dashboard for managing OpenClaw agents. Built with Next.js, Typ
 - **Real-time Gateway Status** - Monitor gateway health, uptime, and performance
 - **Live Session Tracking** - View all active sessions across channels
 - **Node Management** - See connected nodes and their status
-- **Live Log Viewer** - Real-time log streaming
+- **Live Log Viewer** - Real-time log streaming with filters and search
 
 ### 🤖 Agent Management
 - **Create & Configure Agents** - Set up new agents with custom models and settings
-- **Agent Templates** - Quick-start with personality templates
-- **Edit Agent Settings** - Modify model, thinking mode, and identity
-- **File Editor** - Edit agent workspace files (SOUL.md, AGENTS.md, etc.)
+- **Agent Templates** - Quick-start templates (Programmer, Tester, Researcher, etc.)
+- **Edit Agent Settings** - Modify model, thinking mode, skills, and identity
+- **Team Management** - Configure team members for each agent
+
+### 📁 Project & Task Management
+- **Project Creation** - Create and manage projects with dedicated workspaces
+- **Task Queue System** - Automated task assignment and execution
+- **Role-Based Assignment** - Assign tasks to specific agent roles
+- **Task Status Tracking** - Visual kanban board for task management
+- **Project Memory** - Persistent memory per project
+
+### 🛠️ Workspace Management
+- **File Editor** - Edit AGENTS.md, SOUL.md, TEAM.md, USER.md, MEMORY.md
+- **Config Editor** - View and modify openclaw.json
+- **Auto-backup** - Automatic backups before changes
+- **Protected Files** - Safety measures for critical files
 
 ### ⚡ Advanced Features
 - **Rate Limiting** - Built-in API rate limiting for security
 - **Input Validation** - Zod-based schema validation
-- **Auto-refresh** - Real-time data updates
+- **Real-time Updates** - Auto-refresh for active tasks
 - **Dark Theme** - Cyberpunk-inspired dark UI
 
 ## 🚀 Quick Start
@@ -35,12 +44,37 @@ A futuristic web dashboard for managing OpenClaw agents. Built with Next.js, Typ
 - OpenClaw gateway running (default: http://localhost:18789)
 - Gateway token for authentication
 
+### GitHub OAuth Setup (Optional)
+
+To use OAuth authentication instead of Personal Access Tokens:
+
+1. **Create a GitHub OAuth App:**
+   - Go to https://github.com/settings/developers
+   - Click "New OAuth App"
+   - Set **Application name**: "OpenClaw Dashboard" (or your preference)
+   - Set **Homepage URL**: `http://localhost:3456`
+   - Set **Authorization callback URL**: `http://localhost:3456/api/auth/github/callback`
+   - Click "Register application"
+
+2. **Copy credentials to .env.local:**
+   ```env
+   GITHUB_CLIENT_ID=your_client_id_here
+   GITHUB_CLIENT_SECRET=your_client_secret_here
+   ```
+
+3. **Restart the dev server** to load the new environment variables
+
+4. **Connect your account:**
+   - Go to Settings → Git Authentication → OAuth
+   - Click "Connect GitHub Account"
+   - Authorize the app on GitHub
+   - Done! Your account is now connected
+
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/openclaw-opentask.git
-cd openclaw-opentask
+# Clone or navigate to the dashboard directory
+cd /Users/icue/.openclaw/workspace-coder/dashboard
 
 # Install dependencies
 npm install
@@ -56,15 +90,15 @@ Create `.env.local`:
 
 ```env
 # Required
-NEXT_PUBLIC_GATEWAY_URL=http://localhost:18789
-NEXT_PUBLIC_GATEWAY_TOKEN=your-gateway-token-here
+GATEWAY_URL=http://localhost:18789
+GATEWAY_TOKEN=your-gateway-token-here
 
-# GitHub OAuth (optional - for Git integration)
+# GitHub OAuth (optional - for OAuth authentication)
 GITHUB_CLIENT_ID=your_client_id
 GITHUB_CLIENT_SECRET=your_client_secret
 
 # Optional
-PORT=3456
+NEXT_PUBLIC_APP_NAME=OpenClaw Dashboard
 ```
 
 ### Running
@@ -83,24 +117,29 @@ The dashboard will be available at `http://localhost:3000` (dev) or `http://loca
 ## 📁 Project Structure
 
 ```
-openclaw-opentask/
+dashboard/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── api/               # API endpoints
 │   │   ├── agents/            # Agent management pages
+│   │   ├── projects/          # Project management pages
+│   │   ├── team/              # Team management pages
 │   │   ├── workspace/         # File editor
 │   │   ├── settings/          # Config editor
 │   │   └── ...
 │   ├── components/            # React components
 │   │   ├── GlassCard.tsx     # Glassmorphism card component
 │   │   ├── NeonButton.tsx    # Neon-style buttons
+│   │   ├── TaskBoard.tsx     # Kanban task board
 │   │   └── ...
 │   ├── lib/                   # Utility libraries
-│   │   ├── agent.ts          # Agent management
 │   │   ├── rateLimit.ts      # Rate limiting
-│   │   └── ...
+│   │   ├── store.ts          # Data store
+│   │   ├── taskQueue.ts      # Task queue system
+│   │   └── taskRunner.ts     # Task execution
 │   └── types/                 # TypeScript types
 ├── public/                    # Static assets
+├── scripts/                   # Utility scripts
 ├── next.config.js            # Next.js configuration
 ├── tailwind.config.js        # Tailwind configuration
 └── package.json              # Dependencies
@@ -116,8 +155,29 @@ openclaw-opentask/
 | `/api/agents/[id]` | GET | Get agent details |
 | `/api/agents/[id]` | PUT | Update agent |
 | `/api/agents/[id]` | DELETE | Delete agent |
-| `/api/agents/[id]/files/[[...filename]]` | GET/PUT | Read/write agent files |
-| `/api/agents/[id]/sessions` | GET | List agent sessions |
+| `/api/agents/[id]/team` | GET | Get agent team |
+| `/api/agents/[id]/team` | PUT | Update agent team |
+
+### Projects
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/projects` | GET | List all projects |
+| `/api/projects` | POST | Create new project |
+| `/api/projects/[id]` | GET | Get project details |
+| `/api/projects/[id]` | PUT | Update project |
+| `/api/projects/[id]` | DELETE | Delete project |
+| `/api/projects/[id]/tasks` | GET | List project tasks |
+| `/api/projects/[id]/tasks` | POST | Create new task |
+| `/api/projects/[id]/tasks/[taskId]/start` | POST | Start task |
+| `/api/projects/[id]/tasks/[taskId]/cancel` | POST | Cancel task |
+
+### Team & Spawning
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/team/roles` | GET | List team roles |
+| `/api/team/roles` | POST | Create role |
+| `/api/team/spawn` | POST | Spawn team member |
+| `/api/team/spawn` | GET | List spawn records |
 
 ### System
 | Endpoint | Method | Description |
@@ -141,6 +201,14 @@ openclaw-opentask/
 | `/api/settings/git-auth` | GET | Get Git auth status |
 | `/api/settings/git-auth` | POST | Save credentials |
 | `/api/settings/git-auth` | DELETE | Clear credentials |
+| `/api/settings/git-auth/test` | POST | Test connection |
+
+### Cron
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/cron/process-tasks` | POST | Process task queue |
+| `/api/cron/process-tasks` | GET | Get queue status |
+| `/api/cron/process-tasks` | PUT | Update queue config |
 
 ## 🔒 Security Features
 
@@ -148,14 +216,23 @@ openclaw-opentask/
 - **CSRF Protection**: State parameter verification on OAuth callbacks
 - **Token Encryption**: All tokens encrypted with AES-256-GCM
 - **Short-lived States**: OAuth states expire after 10 minutes
+- **Secure Storage**: Credentials stored in macOS Keychain (or encrypted file fallback)
 
 ### Rate Limiting
-- Built-in rate limiting for API endpoints
+- Spawn endpoint: 5 requests per minute
+- GET requests: 30 requests per minute
 - Automatic cleanup of rate limit entries
 
 ### Input Validation
 - Zod schema validation on all inputs
 - Path sanitization to prevent directory traversal
+- String length limits on all text inputs
+- Alphanumeric validation for IDs
+
+### File Path Security
+- All file paths sanitized with `path.basename()`
+- Restricted to workspace directory
+- Protected files cannot be deleted
 
 ## 🎨 Customization
 
@@ -172,6 +249,9 @@ colors: {
   'space-900': '#0a0a0f',
 }
 ```
+
+### Glass Card Variants
+Available variants: `default`, `cyan`, `purple`, `pink`, `green`, `yellow`
 
 ## 🚢 Deployment
 
@@ -192,46 +272,59 @@ CMD ["npm", "start"]
 
 ```bash
 npm run build
-pm2 start npm --name "openclaw-opentask" -- start
+pm2 start npm --name "openclaw-dashboard" -- start
 ```
 
-## 📝 Agent Workspace Files
+### Vercel
 
-When you create an agent, the following files are automatically created:
+```bash
+npm i -g vercel
+vercel
+```
+
+## 📝 Workspace Files
 
 | File | Purpose |
 |------|---------|
-| `SOUL.md` | Core personality definition |
-| `IDENTITY.md` | Agent identity settings |
 | `AGENTS.md` | Agent behavior instructions |
+| `SOUL.md` | Core personality definition |
+| `TEAM.md` | Team member profiles and spawn prompts |
 | `USER.md` | User preferences and context |
 | `MEMORY.md` | Long-term memory storage |
 | `TOOLS.md` | Tool configurations |
+| `IDENTITY.md` | Agent identity settings |
 | `HEARTBEAT.md` | Periodic task definitions |
 
 ## ⚠️ Troubleshooting
 
 ### Gateway Connection Failed
-- Verify `NEXT_PUBLIC_GATEWAY_URL` is correct
+- Verify `GATEWAY_URL` is correct
 - Check if gateway is running
-- Ensure `NEXT_PUBLIC_GATEWAY_TOKEN` is valid
+- Ensure `GATEWAY_TOKEN` is valid
 
 ### Permission Errors
-- Ensure write access to `~/.openclaw/` directory
+- Ensure write access to workspace directory
 - Check file permissions for config files
+
+### Rate Limit Errors
+- Wait for rate limit window to reset
+- Check rate limit headers in response
 
 ### Build Errors
 - Clear `.next` directory: `rm -rf .next`
 - Reinstall dependencies: `rm -rf node_modules && npm install`
 - Run type check: `npx tsc --noEmit`
 
-## 💝 Support the Project
+## 🗺️ Roadmap
 
-If you find OpenClaw OpenTask helpful, consider supporting the development:
-
-[![Donate](https://img.shields.io/badge/Donate-Support%20Development-blue?style=for-the-badge&logo=stripe)](https://buy.stripe.com/14A28sbLa5mJ8SM5qY2VG01)
-
-Your support helps keep the project alive and drives new features!
+- [ ] WebSocket support for real-time updates
+- [ ] Multi-gateway support
+- [ ] Advanced analytics and metrics
+- [ ] Custom dashboard widgets
+- [ ] Agent performance analytics
+- [ ] Batch operations
+- [ ] Export/import functionality
+- [ ] Mobile app companion
 
 ## 📄 License
 
@@ -239,4 +332,6 @@ MIT License - See LICENSE file for details
 
 ---
 
-Built with ❤️ by [iCue](https://github.com/icueth) for OpenClaw
+Built with ❤️ for OpenClaw
+
+**Ready for Cody to use in the morning!** 🚀

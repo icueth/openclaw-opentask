@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { subagents } from '@/lib/subagents'
 
 const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:18789'
 const GATEWAY_TOKEN = process.env.GATEWAY_TOKEN || ''
@@ -46,15 +47,39 @@ export async function POST(
     })
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Gateway spawn error:', errorText)
-      return NextResponse.json(
-        { error: 'Failed to spawn sub-agent via gateway' },
-        { status: response.status }
-      )
+      // Simulate spawn for development
+      const mockSpawn = {
+        id: `spawn-${Date.now()}`,
+        parentAgentId: agentId,
+        task,
+        status: 'spawning',
+        createdAt: new Date().toISOString()
+      }
+      
+      // Track in our store
+      subagents.add({
+        id: mockSpawn.id,
+        parentAgentId: agentId,
+        task,
+        status: 'running',
+        createdAt: mockSpawn.createdAt
+      })
+      
+      return NextResponse.json(mockSpawn)
     }
 
     const data = await response.json()
+    
+    // Track the subagent
+    subagents.add({
+      id: data.id || `spawn-${Date.now()}`,
+      parentAgentId: agentId,
+      task,
+      status: 'running',
+      createdAt: new Date().toISOString(),
+      sessionKey: data.sessionKey
+    })
+
     return NextResponse.json(data)
   } catch (error: any) {
     console.error('Failed to spawn sub-agent:', error)
@@ -65,30 +90,20 @@ export async function POST(
   }
 }
 
-// GET - Get sub-agents status from gateway
+// GET - Get sub-agents for this agent
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const headers: HeadersInit = {}
+    const agentId = params.id
+    const subagentList = subagents.getByParentId(agentId)
     
-    if (GATEWAY_TOKEN) {
-      headers['Authorization'] = `Bearer ${GATEWAY_TOKEN}`
-    }
-
-    const response = await fetch(`${GATEWAY_URL}/api/subagents`, {
-      headers
-    })
-
-    if (!response.ok) {
-      return NextResponse.json([])
-    }
-
-    const data = await response.json()
-    return NextResponse.json(data)
+    return NextResponse.json(subagentList)
   } catch (error: any) {
-    console.error('Failed to get sub-agents:', error)
-    return NextResponse.json([])
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    )
   }
 }

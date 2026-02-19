@@ -9,7 +9,7 @@ import GlassCard from '@/components/GlassCard'
 import HolographicText from '@/components/HolographicText'
 import { 
   Activity, Server, Clock, RefreshCw,
-  Globe, Cpu
+  Globe, FolderKanban, Cpu
 } from 'lucide-react'
 
 interface GatewayStatus {
@@ -31,6 +31,13 @@ interface Node {
   platform: string
   version: string
   lastSeen: string
+}
+
+interface Project {
+  id: string
+  name: string
+  status: string
+  updatedAt: string
 }
 
 interface Log {
@@ -58,6 +65,7 @@ function formatTokens(tokens: number): string {
 export default function Dashboard() {
   const [status, setStatus] = useState<GatewayStatus | null>(null)
   const [nodes, setNodes] = useState<Node[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [logs, setLogs] = useState<Log[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -70,18 +78,21 @@ export default function Dashboard() {
 
   async function fetchAllData() {
     try {
-      const [statusRes, nodesRes, logsRes] = await Promise.all([
+      const [statusRes, nodesRes, projectsRes, logsRes] = await Promise.all([
         fetch('/api/status'),
         fetch('/api/nodes'),
+        fetch('/api/projects'),
         fetch('/api/logs'),
       ])
 
       const statusData = await statusRes.json()
       const nodesData = await nodesRes.json()
+      const projectsData = await projectsRes.json()
       const logsData = await logsRes.json()
 
       setStatus(statusData)
       setNodes(Array.isArray(nodesData) ? nodesData : nodesData.nodes || [])
+      setProjects(Array.isArray(projectsData) ? projectsData : projectsData.projects || [])
       setLogs(Array.isArray(logsData) ? logsData : logsData.logs || [])
     } catch (error) {
       console.error('Failed to fetch data:', error)
@@ -126,7 +137,7 @@ export default function Dashboard() {
             </div>
             <div>
               <HolographicText size="xl" variant="multi">OpenClaw Dashboard</HolographicText>
-              <p className="text-sm text-gray-500 font-mono">Welcome back! Manage your agents and monitor your gateway.</p>
+              <p className="text-sm text-gray-500 font-mono">Welcome back! Manage your agents and projects.</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -162,9 +173,9 @@ export default function Dashboard() {
             color="cyan" 
           />
           <StatCard 
-            title="Sessions" 
-            value={status?.sessionCount || 0} 
-            icon={<Activity className="w-6 h-6" />} 
+            title="Projects" 
+            value={projects.length} 
+            icon={<FolderKanban className="w-6 h-6" />} 
             color="purple" 
           />
           <StatCard 
@@ -183,6 +194,43 @@ export default function Dashboard() {
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Recent Projects */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-neon-purple/10 border border-neon-purple/30 flex items-center justify-center">
+                  <FolderKanban className="w-4 h-4 text-neon-purple" />
+                </div>
+                <h2 className="text-lg font-semibold text-white font-mono">Recent Projects</h2>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {projects.slice(0, 4).map((project) => (
+                <GlassCard key={project.id} className="p-4" hover={true}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-neon-purple/10 flex items-center justify-center">
+                        <FolderKanban className="w-4 h-4 text-neon-purple" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-white font-mono">{project.name}</p>
+                        <p className="text-xs text-gray-500 font-mono capitalize">{project.status}</p>
+                      </div>
+                    </div>
+                  </div>
+                </GlassCard>
+              ))}
+              {projects.length === 0 && (
+                <GlassCard className="py-12 text-center" hover={false}>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-space-700 flex items-center justify-center">
+                    <FolderKanban className="w-8 h-8 text-gray-600" />
+                  </div>
+                  <p className="text-gray-500 font-mono">No projects yet</p>
+                </GlassCard>
+              )}
+            </div>
+          </div>
+
           {/* Connected Nodes */}
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -207,30 +255,28 @@ export default function Dashboard() {
               )}
             </div>
           </div>
+        </div>
 
-          {/* Activity Log */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-neon-green/10 border border-neon-green/30 flex items-center justify-center">
-                  <Activity className="w-4 h-4 text-neon-green" />
+        {/* Activity Log */}
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-neon-green/10 border border-neon-green/30 flex items-center justify-center">
+              <Activity className="w-4 h-4 text-neon-green" />
+            </div>
+            <h2 className="text-lg font-semibold text-white font-mono">Recent Activity</h2>
+          </div>
+          <div className="space-y-3">
+            {logs.slice(0, 6).map((log, index) => (
+              <ActivityLogItem key={index} {...log} />
+            ))}
+            {logs.length === 0 && (
+              <GlassCard className="py-12 text-center" hover={false}>
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-space-700 flex items-center justify-center">
+                  <Activity className="w-8 h-8 text-gray-600" />
                 </div>
-                <h2 className="text-lg font-semibold text-white font-mono">Recent Activity</h2>
-              </div>
-            </div>
-            <div className="space-y-3">
-              {logs.slice(0, 4).map((log, index) => (
-                <ActivityLogItem key={index} {...log} />
-              ))}
-              {logs.length === 0 && (
-                <GlassCard className="py-12 text-center" hover={false}>
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-space-700 flex items-center justify-center">
-                    <Activity className="w-8 h-8 text-gray-600" />
-                  </div>
-                  <p className="text-gray-500 font-mono">No recent activity</p>
-                </GlassCard>
-              )}
-            </div>
+                <p className="text-gray-500 font-mono">No recent activity</p>
+              </GlassCard>
+            )}
           </div>
         </div>
       </div>
