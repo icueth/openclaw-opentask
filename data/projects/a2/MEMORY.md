@@ -21,5 +21,10 @@ Project-specific memory shared among agents.
 ## References
 <!-- Links to relevant docs, designs, etc. -->
 
+## 2026-02-20 - Task: Golang HMAC Hash Password
+- Summary: Golang HMAC-SHA256 password hashing with secret key
+- Files: hashpassword.go, go.mod, hashpassword_test.go
+- Key Points: HMAC-based, requires secret key, random salt per password
+
 ---
 *Created: 2026-02-19T08:38:52.339Z*

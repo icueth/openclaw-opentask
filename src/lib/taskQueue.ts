@@ -278,14 +278,15 @@ export function cleanupZombieTasks(): number {
 
   tasks.forEach(task => {
     if (task.status === 'processing' || task.status === 'active') {
+      // Check if task was created recently (give it time to complete)
+      const taskAge = Date.now() - new Date(task.createdAt).getTime()
+      if (taskAge < 600000) { // 10 minutes grace period for ALL tasks
+        console.log(`[Zombie Cleanup] Task ${task.id} is new (${Math.round(taskAge/1000)}s), skipping cleanup`)
+        return
+      }
+      
       // Skip pipeline tracking tasks - they don't have real processes
       if (task.title?.startsWith('🔄 [Pipeline]') && !task.description?.includes('Step ID:')) {
-        // Check if pipeline was created recently (give it time to spawn child tasks)
-        const taskAge = Date.now() - new Date(task.createdAt).getTime()
-        if (taskAge < 180000) { // 3 minutes grace period
-          console.log(`[Zombie Cleanup] Pipeline ${task.id} is new (${Math.round(taskAge/1000)}s), skipping cleanup`)
-          return
-        }
         
         // Check if any child tasks are still running
         const childTasks = tasks.filter(t =>

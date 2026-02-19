@@ -1557,5 +1557,133 @@
     "error": "Process died or was killed",
     "completedAt": "2026-02-19T17:09:17.591Z",
     "assignedAgent": "agent:coordinator:subagent:ea8a01f1-681b-448f-bc21-490b419c5104"
+  },
+  {
+    "projectId": "a3",
+    "title": "สร้าง golang function randompassword 30 digit",
+    "description": "สร้าง golang function randompassword 30 digit",
+    "agentId": "taskman",
+    "priority": "medium",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771522098087-3wkn2l57s",
+    "status": "completed",
+    "createdAt": "2026-02-19T17:28:18.087Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T17:28:18.087Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T17:28:18.169Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T17:28:18.174Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T17:28:18.179Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T17:28:18.227Z",
+        "message": "Contacting TaskMan..."
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T17:28:31.405Z",
+        "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T17:28:43.621Z",
+        "message": "Worker spawned via TaskMan"
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T17:28:43.956Z",
+        "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T17:29:51.464Z",
+        "message": "Task completed successfully. Created: randompassword.go"
+      }
+    ],
+    "retryCount": 0,
+    "startedAt": "2026-02-19T17:28:18.227Z",
+    "error": "Process died or was killed",
+    "completedAt": "2026-02-19T17:28:31.405Z",
+    "assignedAgent": "agent:coordinator:subagent:81005db3-1b9e-4f76-a8a2-2beb9e1f0ccb"
+  },
+  {
+    "projectId": "a2",
+    "title": "สร้าง golang function hash password with key",
+    "description": "สร้าง golang function hash password with key",
+    "agentId": "coder",
+    "priority": "high",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771522208546-sljjy8no7",
+    "status": "completed",
+    "createdAt": "2026-02-19T17:30:08.546Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T17:30:08.546Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T17:30:08.548Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T17:30:08.553Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T17:30:08.554Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T17:30:08.563Z",
+        "message": "Contacting TaskMan..."
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T17:30:31.407Z",
+        "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T17:30:33.163Z",
+        "message": "Worker spawned via TaskMan"
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T17:30:33.337Z",
+        "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T17:30:42.653Z",
+        "message": "Task completed successfully. Created: hashpassword.go"
+      }
+    ],
+    "retryCount": 0,
+    "startedAt": "2026-02-19T17:30:08.563Z",
+    "error": "Process died or was killed",
+    "completedAt": "2026-02-19T17:30:31.407Z",
+    "assignedAgent": "agent:coordinator:subagent:f5622571-0fb4-4210-bde6-1cdb0142bc02"
   }
 ]

@@ -1,0 +1,58 @@
+[DASHBOARD] Task Request
+ID: task-1771522208546-sljjy8no7
+Project: a2
+Title: สร้าง golang function hash password with key
+Description: สร้าง golang function hash password with key
+TargetAgent: coder
+Model: kimi-coding/kimi-for-coding
+Thinking: medium
+
+⚠️ IMPORTANT: This task requires MEMORY MANAGEMENT
+
+Before spawning the worker:
+1. Read MEMORY.md from the project
+2. Include relevant context in the worker's task
+
+After the worker completes:
+3. Update MEMORY.md with the task results
+4. Log key decisions and learnings
+
+Please use sessions_spawn to create a worker agent for this task.
+The worker should use the specified Model and Thinking level.
+Ensure the worker reads and updates MEMORY.md.
+
+Task Context:
+## Task: สร้าง golang function hash password with key
+
+### Instructions
+สร้าง golang function hash password with key
+
+### Workspace
+/Users/icue/.openclaw/workspace-coder/dashboard/data/projects/a2
+
+### Tools
+- write - Create files
+- read - Read files
+- edit - Edit files
+- exec - Execute commands
+
+### Progress Tracking (REQUIRED)
+Report progress at 20%, 40%, 60%, 80%, 100%
+
+### Memory Management (CRITICAL)
+⚠️ YOU MUST READ AND UPDATE MEMORY ⚠️
+
+**BEFORE starting:**
+Read the project memory to understand context:
+```
+read: {"file_path": "/Users/icue/.openclaw/workspace-coder/dashboard/data/projects/a2/MEMORY.md"}
+```
+
+**AFTER completing:**
+Update MEMORY.md with what you did:
+```
+read: {"file_path": "/Users/icue/.openclaw/workspace-coder/dashboard/data/projects/a2/MEMORY.md"}
+```
+Then edit to append:
+```
+edit: {"file_path": "/Users/icue/.openclaw/workspace-coder/dashboard/data/projects/a2/MEMORY.md", "old_string": "---", "new_string": "## 2026-02-19 - Task: สร้าง golang function hash passw
