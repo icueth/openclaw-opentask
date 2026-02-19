@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "projectId": "a2",
+    "title": "ทดสอบ",
+    "description": "สร้าง js สุ่ม a-z 10 ตัว",
+    "agentId": "coder",
+    "priority": "medium",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771490362579-822srbkuh",
+    "status": "completed",
+    "createdAt": "2026-02-19T08:39:22.579Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T08:39:22.579Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T08:39:22.579Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T08:39:22.580Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T08:39:22.580Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T08:39:22.680Z",
+        "message": "Sub-agent spawned and processing task"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T08:40:00.316Z",
+        "message": "✅ Task completed successfully"
+      }
+    ],
+    "retryCount": 0,
+    "assignedAgent": "sub-task-1771490362579-822srbkuh-1771490362584",
+    "startedAt": "2026-02-19T08:39:22.680Z",
+    "completedAt": "2026-02-19T08:40:00.316Z"
+  }
+]

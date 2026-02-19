@@ -323,6 +323,22 @@ export function clearTaskProgress(id: string): Task {
   return tasks[index]
 }
 
+// --- In-Memory Store for Runtime Data ---
+// Used for temporary data like subagent tracking
+const memoryStore = new Map<string, any>()
+
+export function set(key: string, value: any): void {
+  memoryStore.set(key, value)
+}
+
+export function get(key: string): any {
+  return memoryStore.get(key)
+}
+
+export function remove(key: string): boolean {
+  return memoryStore.delete(key)
+}
+
 // Export store object for convenience
 export const store = {
   // Projects
@@ -347,7 +363,11 @@ export const store = {
   writeTasks,
   // Progress
   updateTaskProgress,
-  clearTaskProgress
+  clearTaskProgress,
+  // Memory store
+  set,
+  get,
+  remove
 }
 
 export default store
