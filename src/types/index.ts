@@ -2,3 +2,4 @@
 export * from './gitAuth'
 export * from './agent'
 export * from './project'
+export * from './task'

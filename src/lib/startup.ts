@@ -3,6 +3,8 @@
  * Import this in layout.tsx or page.tsx to ensure services start
  */
 
+import { startQueueProcessor, isQueueProcessorRunning } from './taskQueue'
+
 let started = false
 
 export function ensureServicesStarted(): void {
@@ -12,10 +14,29 @@ export function ensureServicesStarted(): void {
   started = true
   
   console.log('[Startup] ==========================================')
-  console.log('[Startup] OpenClaw OpenTask Dashboard Starting...')
+  console.log('[Startup] Dashboard Services Starting...')
   console.log('[Startup] ==========================================')
-  console.log('[Startup] Dashboard ready!')
+  
+  // Start queue processor
+  if (!isQueueProcessorRunning()) {
+    console.log('[Startup] Starting queue processor...')
+    startQueueProcessor()
+    console.log('[Startup] ✓ Queue processor started')
+  } else {
+    console.log('[Startup] Queue processor already running')
+  }
+  
   console.log('[Startup] ==========================================')
+  console.log('[Startup] All services started successfully')
+  console.log('[Startup] ==========================================')
+}
+
+// Auto-start on module load (server-side only)
+if (typeof window === 'undefined') {
+  // Delay slightly to ensure all modules are loaded
+  setTimeout(() => {
+    ensureServicesStarted()
+  }, 1000)
 }
 
 export default ensureServicesStarted
