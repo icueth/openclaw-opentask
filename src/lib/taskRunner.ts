@@ -449,10 +449,12 @@ Progress checkpoints (REQUIRED):
 - 80% - Verifying and testing
 - 100% - Task completed
 
-**When task is COMPLETE, write final status:**
+**⚠️ CRITICAL: When task is COMPLETE, you MUST write final status with FULL RESULT:**
 \`\`\`
-write: {"file_path": "${statusFilePath}", "content": "{\\"percentage\\": 100, \\"message\\": \\"✅ Task completed successfully\\", \\"status\\": \\"completed\\", \\"result\\": \\"Summary of what was accomplished...\\", \\"artifacts\\": [\\"filename1\\", \\"filename2\\"], \\"timestamp\\": \\"${new Date().toISOString()}\\"}"}
+write: {"file_path": "${statusFilePath}", "content": "{\\"percentage\\": 100, \\"message\\": \\"✅ Task completed successfully\\", \\"status\\": \\"completed\\", \\"result\\": \\"✅ Task Completed Successfully\\n\\nI have created [filename] with [description].\\n\\nWhat was accomplished:\\n✅ Step 1: Description\\n✅ Step 2: Description\\n✅ Step 3: Description\\n\\nDeliverables:\\n[full path] - [size]\\n\\nSummary: [Detailed description of the work done]\\", \\"artifacts\\": [\\"filename1\\", \\"filename2\\"], \\"timestamp\\": \\"${new Date().toISOString()}\\"}"}
 \`\`\`
+
+**The "result" field is REQUIRED and must contain the FULL SUMMARY of your work!**
 
 ### Memory Management
 **BEFORE starting:**

@@ -67,11 +67,21 @@ async function detectTaskCompletion(): Promise<void> {
         
         // Check if completed via status file
         if (workerStatus.status === 'completed' || workerStatus.percentage === 100) {
-          const result = workerStatus.result || `Task completed. ${workerStatus.message}`
+          let result = workerStatus.result
+          
+          // If no result field, construct one from available data
+          if (!result || result.trim() === '') {
+            const artifacts = workerStatus.artifacts || []
+            const artifactList = artifacts.length > 0 
+              ? `Files created: ${artifacts.join(', ')}`
+              : 'Task completed successfully'
+            result = `✅ ${workerStatus.message}\n\n${artifactList}`
+          }
+          
           const artifacts = workerStatus.artifacts || []
           
           console.log(`[TaskCompletion] Task ${task.id} COMPLETED via status file.`)
-          updateTaskStatus(task.id, 'completed', `✅ ${result}`, { artifacts })
+          updateTaskStatus(task.id, 'completed', result, { artifacts })
           continue // Skip other checks
         }
       }
