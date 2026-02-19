@@ -373,8 +373,8 @@ export function cleanupZombieTasks(): number {
           }
         }
 
-        // For TaskMan-spawned tasks: check if worker is still running via subagent tracking
-        if (!completedSuccessfully && task.assignedAgent?.includes('taskman')) {
+        // For TaskMan/Coordinator-spawned tasks: check if worker is still running via subagent tracking
+        if (!completedSuccessfully && (task.assignedAgent?.includes('taskman') || task.assignedAgent?.includes('subagent'))) {
           console.log(`[Zombie Cleanup] Task ${task.id} used TaskMan, checking worker status...`)
           // TaskMan exits after spawning worker, so we need to check worker log instead
           const logFile = path.join(process.cwd(), 'data', 'task-contexts', `${task.id}.log`)
