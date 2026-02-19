@@ -136,5 +136,977 @@
     "assignedAgent": "coder:66547",
     "startedAt": "2026-02-19T09:28:08.854Z",
     "completedAt": "2026-02-19T09:29:40.000Z"
+  },
+  {
+    "projectId": "a2",
+    "title": "ทดสอบ3",
+    "description": "สร้าง function hash password javasript\n\n[Worker Pool] 3 workers in collaborative mode",
+    "agentId": "coder",
+    "priority": "medium",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771495844437-2lq14z3wf",
+    "status": "processing",
+    "createdAt": "2026-02-19T10:10:44.437Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T10:10:44.437Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:10:44.438Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:44.438Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:44.438Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:10:44.442Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:44.772Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:44.774Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:10:44.777Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:44.793Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:44.794Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:10:44.795Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:49.926Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:49.926Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:10:49.928Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:50.283Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:50.284Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:10:50.285Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:51.085Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:51.087Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:10:51.091Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:51.112Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:51.113Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:10:51.114Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:51.267Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:10:51.268Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:10:51.272Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:16.311Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:16.311Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:16.312Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:16.312Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:16.312Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:16.313Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:11:16.314Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:11:16.315Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:11:16.315Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:34.990Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:34.994Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:11:34.995Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:36.151Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:36.151Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:11:36.152Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:39.063Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:39.063Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:11:39.065Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:44.795Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:44.795Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:11:44.798Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:49.928Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:49.929Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:11:49.930Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:50.285Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:50.286Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:11:50.287Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:51.115Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:11:51.115Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:11:51.117Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:17.514Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:17.515Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:17.517Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:17.938Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:17.939Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:17.940Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:21.181Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:21.181Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:21.182Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:21.862Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:21.862Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:21.863Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:22.846Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:22.846Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:22.848Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:24.737Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:24.738Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:24.739Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:27.969Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:27.970Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:27.971Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:28.343Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:28.344Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:28.345Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:29.898Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:29.899Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:29.900Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:44.796Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:44.797Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:44.799Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:49.929Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:49.929Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:49.932Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:50.286Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:50.286Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:50.288Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:51.115Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:12:51.116Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:12:51.117Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:09.600Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:09.602Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:09.606Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:17.515Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:17.516Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:17.518Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:17.939Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:17.940Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:17.941Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:21.180Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:21.181Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:21.182Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:21.862Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:21.863Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:21.864Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:22.847Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:22.848Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:22.849Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:24.738Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:24.739Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:24.741Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:27.971Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:27.972Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:27.973Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:28.344Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:28.345Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:28.346Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:29.899Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:29.899Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:29.900Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:44.797Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:44.798Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:44.800Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:49.930Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:49.930Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:49.932Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:50.287Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:50.287Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:50.288Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:51.116Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:13:51.116Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:13:51.117Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:17.518Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:17.518Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:17.521Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:17.941Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:17.943Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:17.944Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:21.181Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:21.182Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:21.184Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:21.864Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:21.865Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:21.866Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:22.848Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:22.848Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:22.849Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:24.739Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:24.740Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:24.741Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:27.972Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:27.973Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:27.974Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:28.344Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:28.345Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:28.346Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:29.900Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:29.900Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:29.901Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:44.799Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:44.800Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:44.802Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:49.929Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:49.930Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:49.931Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:50.289Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:50.290Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:50.291Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:51.117Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:14:51.118Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:14:51.119Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:15:17.518Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:15:17.519Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:15:17.521Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:15:17.941Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:15:17.942Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:15:17.943Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:15:21.182Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:15:21.183Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:15:21.184Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:15:21.866Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:15:21.867Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T10:15:21.869Z",
+        "message": "Waiting for coordinator..."
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:15:22.517Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T10:15:22.517Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T10:15:22.522Z",
+        "message": "Sub-agent spawned and processing"
+      }
+    ],
+    "retryCount": 0,
+    "assignedAgent": "coder:21203",
+    "startedAt": "2026-02-19T10:15:22.522Z"
   }
 ]
