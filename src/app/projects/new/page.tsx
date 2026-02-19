@@ -9,18 +9,10 @@ import HolographicText from '@/components/HolographicText'
 import { useProjects } from '@/hooks/useProjects'
 import { 
   ArrowLeft, FolderPlus, AlertCircle, Sparkles, 
-  FileText, CheckCircle, Bot, Github, Lightbulb,
+  FileText, CheckCircle, Github, Lightbulb,
   Rocket, ExternalLink
 } from 'lucide-react'
 import Link from 'next/link'
-
-interface Agent {
-  id: string
-  name: string
-  workspace: string
-  model?: string
-  isDefault?: boolean
-}
 
 export default function NewProjectPage() {
   const router = useRouter()
@@ -29,38 +21,12 @@ export default function NewProjectPage() {
   const [name, setName] = useState('')
   const [id, setId] = useState('')
   const [description, setDescription] = useState('')
-  const [agentId, setAgentId] = useState('')
-  const [agents, setAgents] = useState<Agent[]>([])
-  const [agentsLoading, setAgentsLoading] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState(false)
   const [createdProject, setCreatedProject] = useState<any>(null)
   const [githubUrl, setGithubUrl] = useState('')
   const [githubError, setGithubError] = useState<string | null>(null)
-
-  // Fetch available agents
-  useEffect(() => {
-    async function fetchAgents() {
-      try {
-        const res = await fetch('/api/agents')
-        const data = await res.json()
-        const agentsList = Array.isArray(data) ? data : []
-        setAgents(agentsList)
-        // Auto-select default agent if available, otherwise first agent
-        if (agentsList.length > 0 && !agentId) {
-          const defaultAgent = agentsList.find((a: Agent) => a.isDefault)
-          setAgentId(defaultAgent?.id || agentsList[0].id)
-        }
-      } catch (err) {
-        console.error('Failed to fetch agents:', err)
-        setAgents([])
-      } finally {
-        setAgentsLoading(false)
-      }
-    }
-    fetchAgents()
-  }, [])
 
   const generateId = (projectName: string) => {
     return projectName
@@ -77,8 +43,6 @@ export default function NewProjectPage() {
       setId(generateId(value))
     }
   }
-
-  const selectedAgent = agents.find(a => a.id === agentId)
 
   // Validate GitHub URL format
   const validateGithubUrl = (url: string): boolean => {
@@ -109,11 +73,6 @@ export default function NewProjectPage() {
       return
     }
 
-    if (!agentId) {
-      setError('Please select an agent')
-      return
-    }
-
     if (!/^[a-z0-9-]+$/.test(id)) {
       setError('Project ID must be lowercase alphanumeric with hyphens only')
       return
@@ -131,7 +90,6 @@ export default function NewProjectPage() {
       name: name.trim(),
       description: description.trim(),
       id: id.trim(),
-      agentId,
       githubUrl: githubUrl.trim() || undefined
     })
 
@@ -286,56 +244,6 @@ export default function NewProjectPage() {
               </div>
             </GlassCard>
 
-            {/* Agent Selection */}
-            <GlassCard className="p-6" cornerAccent>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
-                  <Bot className="w-4 h-4 text-neon-green" />
-                  Assign to Agent *
-                </label>
-                {agents.length === 0 && !agentsLoading ? (
-                  <div className="p-4 rounded-xl border border-neon-yellow/30 bg-neon-yellow/5">
-                    <p className="text-neon-yellow text-sm">
-                      No agents available. Check your OpenClaw configuration.
-                    </p>
-                  </div>
-                ) : (
-                  <select
-                    value={agentId}
-                    onChange={(e) => setAgentId(e.target.value)}
-                    disabled={loading || agentsLoading || agents.length === 0}
-                    className="w-full px-4 py-3 bg-space-800/50 border border-space-600/50 rounded-xl
-                      text-gray-200
-                      focus:border-neon-cyan/50 focus:outline-none focus:ring-1 focus:ring-neon-cyan/30
-                      transition-all disabled:opacity-50 appearance-none cursor-pointer"
-                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
-                  >
-                    <option value="">Select an agent...</option>
-                    {agentsLoading ? (
-                      <option value="" disabled>Loading agents...</option>
-                    ) : (
-                      agents.map((agent) => (
-                        <option key={agent.id} value={agent.id}>
-                          {agent.name} {agent.isDefault ? '(Default)' : ''} ({agent.id})
-                        </option>
-                      ))
-                    )}
-                  </select>
-                )}
-                {selectedAgent && (
-                  <div className="mt-3 p-3 rounded-lg bg-space-800/50 border border-neon-green/20">
-                    <p className="text-xs text-gray-400">Project will be created at:</p>
-                    <code className="text-xs text-neon-cyan/70 font-mono break-all">
-                      data/projects/{id || '...'}
-                    </code>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Assigned to agent: <span className="text-neon-purple">{selectedAgent.name}</span>
-                    </p>
-                  </div>
-                )}
-              </div>
-            </GlassCard>
-
             {/* GitHub Repository */}
             <GlassCard className="p-6" cornerAccent>
               <div className="space-y-2">
@@ -428,7 +336,7 @@ export default function NewProjectPage() {
                 type="submit"
                 variant="cyan"
                 loading={loading}
-                disabled={loading || !name.trim() || !agentId}
+                disabled={loading || !name.trim()}
                 icon={<FolderPlus className="w-4 h-4" />}
               >
                 Create Project

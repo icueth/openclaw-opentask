@@ -43,7 +43,7 @@ interface CreateProjectData {
   name: string
   description?: string
   id?: string
-  agentId: string
+  agentId?: string
   githubUrl?: string
 }
 

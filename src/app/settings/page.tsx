@@ -7,16 +7,42 @@ import HolographicText from '@/components/HolographicText'
 import NeonButton from '@/components/NeonButton'
 import NeonBadge from '@/components/NeonBadge'
 import { 
-  Settings, RotateCcw, AlertCircle, Lock, Key, ChevronRight
+  Settings, RotateCcw, AlertCircle, Lock, Key, ChevronRight, Bot, Cpu, Save, RefreshCw
 } from 'lucide-react'
 import Link from 'next/link'
+
+const MODEL_OPTIONS = [
+  { value: 'kimi-coding/kimi-for-coding', label: 'Kimi Code (Default)' },
+  { value: 'kimi-coding/k2p5', label: 'Kimi K2.5' },
+  { value: 'moonshot/kimi-2.5', label: 'Kimi 2.5' },
+  { value: 'moonshot/kimi-k2.5', label: 'Kimi K2.5 (Alt)' }
+]
+
+const THINKING_OPTIONS = [
+  { value: 'off', label: 'Off (Fastest)' },
+  { value: 'minimal', label: 'Minimal' },
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium (Default)' },
+  { value: 'high', label: 'High' }
+]
 
 export default function SettingsPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [gitAuthStatus, setGitAuthStatus] = useState<any>(null)
+  
+  // TaskMan Settings
+  const [taskManSettings, setTaskManSettings] = useState({
+    gatewayToken: '',
+    gatewayPassword: '',
+    taskModel: 'kimi-coding/kimi-for-coding',
+    taskThinking: 'medium'
+  })
+  const [originalTaskManSettings, setOriginalTaskManSettings] = useState<any>(null)
+  const [savingTaskMan, setSavingTaskMan] = useState(false)
 
   useEffect(() => {
     fetchGitAuthStatus()
+    fetchTaskManSettings()
   }, [])
 
   async function fetchGitAuthStatus() {
@@ -28,6 +54,65 @@ export default function SettingsPage() {
       }
     } catch (error) {
       console.error('Failed to fetch git auth status:', error)
+    }
+  }
+
+  async function fetchTaskManSettings() {
+    try {
+      const res = await fetch('/api/settings/system')
+      const data = await res.json()
+      if (data.success) {
+        setTaskManSettings({
+          gatewayToken: '',
+          gatewayPassword: '',
+          taskModel: data.settings.taskModel || 'kimi-coding/kimi-for-coding',
+          taskThinking: data.settings.taskThinking || 'medium'
+        })
+        setOriginalTaskManSettings(data.settings)
+      }
+    } catch (error) {
+      console.error('Failed to fetch TaskMan settings:', error)
+    }
+  }
+
+  async function saveTaskManSettings() {
+    setSavingTaskMan(true)
+    setMessage(null)
+    
+    try {
+      const res = await fetch('/api/settings/system', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskManSettings)
+      })
+      
+      const data = await res.json()
+      
+      if (data.success) {
+        setMessage({ type: 'success', text: 'TaskMan settings saved!' })
+        setOriginalTaskManSettings(data.settings)
+        setTaskManSettings(s => ({ ...s, gatewayToken: '', gatewayPassword: '' }))
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to save settings' })
+      }
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message })
+    } finally {
+      setSavingTaskMan(false)
+    }
+  }
+
+  async function setupTaskMan() {
+    try {
+      const res = await fetch('/api/setup-taskman', { method: 'POST' })
+      const data = await res.json()
+      if (data.success) {
+        setMessage({ type: 'success', text: 'TaskMan agent setup complete!' })
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Setup failed' })
+      }
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message })
     }
   }
 
@@ -121,6 +206,82 @@ export default function SettingsPage() {
             <NeonBadge variant={gitAuthStatus?.configured ? 'green' : 'default'} size="sm">
               {gitAuthStatus?.configured ? 'Active' : 'Inactive'}
             </NeonBadge>
+          </div>
+        </GlassCard>
+
+        {/* TaskMan Settings */}
+        <GlassCard variant="purple" className="p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-lg bg-neon-purple/10 border border-neon-purple/30 flex items-center justify-center">
+              <Bot className="w-5 h-5 text-neon-purple" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white font-mono">TaskMan Configuration</h2>
+              <p className="text-sm text-gray-500 font-mono">Configure the task execution agent</p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {/* Gateway Token */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2 font-mono">
+                Gateway Token {originalTaskManSettings?.hasToken && <span className="text-neon-green">(Configured)</span>}
+              </label>
+              <input
+                type="password"
+                value={taskManSettings.gatewayToken}
+                onChange={(e) => setTaskManSettings({ ...taskManSettings, gatewayToken: e.target.value })}
+                placeholder={originalTaskManSettings?.hasToken ? '••••••••' : 'Enter gateway token'}
+                className="w-full px-4 py-3 rounded-xl bg-space-900 border border-space-700 text-white placeholder-gray-600 focus:border-neon-purple focus:outline-none transition-colors font-mono"
+              />
+            </div>
+
+            {/* Model Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2 font-mono flex items-center gap-2">
+                  <Cpu className="w-4 h-4" />
+                  Task Model
+                </label>
+                <select
+                  value={taskManSettings.taskModel}
+                  onChange={(e) => setTaskManSettings({ ...taskManSettings, taskModel: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-space-900 border border-space-700 text-white focus:border-neon-purple focus:outline-none transition-colors font-mono"
+                >
+                  {MODEL_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2 font-mono">Thinking Level</label>
+                <select
+                  value={taskManSettings.taskThinking}
+                  onChange={(e) => setTaskManSettings({ ...taskManSettings, taskThinking: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-space-900 border border-space-700 text-white focus:border-neon-purple focus:outline-none transition-colors font-mono"
+                >
+                  {THINKING_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Setup & Save Buttons */}
+            <div className="flex flex-wrap gap-4 pt-4 border-t border-space-700">
+              <NeonButton variant="yellow" onClick={setupTaskMan}>
+                Setup TaskMan Agent
+              </NeonButton>
+              <NeonButton
+                variant="purple"
+                onClick={saveTaskManSettings}
+                disabled={savingTaskMan}
+                icon={savingTaskMan ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              >
+                {savingTaskMan ? 'Saving...' : 'Save Settings'}
+              </NeonButton>
+            </div>
           </div>
         </GlassCard>
 
