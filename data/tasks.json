@@ -1685,5 +1685,58 @@
     "error": "Process died or was killed",
     "completedAt": "2026-02-19T17:30:31.407Z",
     "assignedAgent": "agent:coordinator:subagent:f5622571-0fb4-4210-bde6-1cdb0142bc02"
+  },
+  {
+    "projectId": "a3",
+    "title": "สร้าง golang function random animals 10 type",
+    "description": "สร้าง golang function random animals 10 type",
+    "agentId": "taskman",
+    "priority": "medium",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771522635389-kyg6k4b7q",
+    "status": "completed",
+    "createdAt": "2026-02-19T17:37:15.389Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T17:37:15.389Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T17:37:15.391Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T17:37:15.393Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T17:37:15.395Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T17:37:15.399Z",
+        "message": "Contacting TaskMan..."
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T17:37:35.500Z",
+        "message": "Worker spawned via TaskMan"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T17:37:41.943Z",
+        "message": "Task completed successfully. Created: randomanimals.go"
+      }
+    ],
+    "retryCount": 0,
+    "startedAt": "2026-02-19T17:37:15.399Z",
+    "assignedAgent": "agent:coordinator:subagent:546e95e0-4fc7-41dd-8cca-9583b4df9382",
+    "completedAt": "2026-02-19T17:37:41.943Z"
   }
 ]

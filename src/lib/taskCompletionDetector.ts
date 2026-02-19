@@ -50,8 +50,24 @@ async function detectTaskCompletion(): Promise<void> {
       const status = await checkTaskStatus(task)
       
       if (status.hasCompleted) {
+        const fileDetails = status.outputFiles.map((f: string) => {
+          try {
+            const project = (await import('./store')).store.getProjectById(task.projectId)
+            if (project?.path) {
+              const stat = fs.statSync(path.join(project.path, f))
+              const size = stat.size > 1024 ? `${(stat.size / 1024).toFixed(1)}KB` : `${stat.size}B`
+              return `${f} (${size})`
+            }
+            return f
+          } catch (e) {
+            return f
+          }
+        })
+        
         console.log(`[TaskCompletion] Task ${task.id} COMPLETED. Files: ${status.outputFiles.join(', ')}`)
-        updateTaskStatus(task.id, 'completed', `Task completed successfully. Created: ${status.outputFiles.join(', ')}`)
+        updateTaskStatus(task.id, 'completed', `✅ Task completed successfully.\n\n📁 Files created:\n${fileDetails.map((f: string) => `- ${f}`).join('\n')}`, {
+          artifacts: status.outputFiles
+        })
       } else if (task.status === 'processing' && !status.isRunning) {
         // Task stopped but no completion detected - might be zombie
         const startTime = new Date(task.startedAt || task.createdAt).getTime()

@@ -152,27 +152,24 @@ export async function POST(
       console.log(`[POST /api/projects/${projectId}/tasks] Task ${task.id} started, new status: ${taskQueue.getTaskById(task.id)?.status}`)
     }
     
-    // IMMEDIATELY process queue to spawn sub-agent (don't wait for background processor)
-    console.log(`[POST /api/projects/${projectId}/tasks] Calling processQueue for task ${task.id}...`)
+    // Process queue in background (don't block the API response)
+    console.log(`[POST /api/projects/${projectId}/tasks] Triggering background queue processing for task ${task.id}...`)
     
-    try {
-      await taskQueue.processQueue()
-      console.log(`[POST /api/projects/${projectId}/tasks] processQueue completed successfully`)
-    } catch (queueError: any) {
-      console.error(`[POST /api/projects/${projectId}/tasks] processQueue FAILED:`, queueError.message)
-      console.error(queueError.stack)
-    }
-    
-    // Get the updated task (may have changed status)
-    const updatedTask = taskQueue.getTaskById(task.id)
-    console.log(`[POST /api/projects/${projectId}/tasks] Final task status: ${updatedTask?.status}, assignedAgent: ${updatedTask?.assignedAgent || 'none'}`)
+    // Run processQueue in background without awaiting
+    taskQueue.processQueue().then(() => {
+      console.log(`[POST /api/projects/${projectId}/tasks] Background processQueue completed`)
+    }).catch((queueError: any) => {
+      console.error(`[POST /api/projects/${projectId}/tasks] Background processQueue FAILED:`, queueError.message)
+    })
     
     const duration = Date.now() - startTime
     console.log(`[POST /api/projects/${projectId}/tasks] ====== END (${duration}ms) ======`)
     
+    // Return immediately with the created task (status will be 'pending' or 'processing')
     return NextResponse.json({
       success: true,
-      task: updatedTask || task
+      task: task,
+      message: 'Task created and queued for processing'
     }, { status: 201 })
   } catch (error: any) {
     console.error(`[POST /api/projects/${params.id}/tasks] UNEXPECTED ERROR:`, error.message)

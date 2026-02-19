@@ -254,15 +254,28 @@ report_progress() {
   node "${progressHelperPath}" "$1" "$2" 2>/dev/null || true
 }
 
-report_progress 15 "📖 Reading task..."
+# Report initial progress
+report_progress 20 "📝 Analyzing requirements..."
+sleep 1
 
+# Simulate progress steps
+report_progress 40 "💡 Planning implementation..."
+sleep 1
+
+report_progress 60 "⚡ Writing code..."
+
+# Run the actual agent
 openclaw agent \\
   --agent ${agentConfig.id} \\
   --message "$(cat "${promptFile}")" \\
   --thinking ${agentConfig.thinking || 'medium'} \\
   --json 2>&1 | tee -a "$LOG_FILE" || true
 
-report_progress 100 "✅ Task completed"
+report_progress 80 "✅ Testing and verifying..."
+sleep 1
+
+report_progress 100 "🎉 Task completed"
+echo "=== Task Completed ===" >> "$LOG_FILE"
 `
     
     fs.writeFileSync(agentScriptPath, agentScript)
@@ -336,6 +349,8 @@ function buildTaskContext(task: any, agentConfig: AgentConfig, project: any): st
   const memoryFilePath = path.join(projectPath, 'MEMORY.md')
   const projectMemory = readMemorySync(task.projectId)
   const formattedMemory = formatMemoryForPrompt(projectMemory)
+  const contextDir = path.join(process.cwd(), 'data', 'task-contexts')
+  const progressHelperPath = path.join(contextDir, `${task.id}-progress.js`)
   
   return `## Task: ${task.title}
 
@@ -351,33 +366,43 @@ ${projectPath}
 - edit - Edit files
 - exec - Execute commands
 
-### Progress Tracking (REQUIRED)
-Report progress at 20%, 40%, 60%, 80%, 100%
+### ⚠️ CRITICAL: Progress Reporting
+You MUST report progress at EACH step using this exact command:
 
-### Memory Management (CRITICAL)
-⚠️ YOU MUST READ AND UPDATE MEMORY ⚠️
+\`\`\`
+exec: {"command": "node ${progressHelperPath} 20 '📝 Step 1: Analyzing requirements'"}
+\`\`\`
 
+Progress checkpoints (REQUIRED):
+- 20% - Analyzing requirements and understanding the task
+- 40% - Planning implementation approach
+- 60% - Writing code and implementing solution
+- 80% - Testing and verifying the solution
+- 100% - Finalizing and completing
+
+Report progress AFTER completing each major step!
+
+### ⚠️ CRITICAL: Task Completion
+When you finish the task, you MUST:
+1. Report final progress: exec: {"command": "node ${progressHelperPath} 100 '✅ Task completed successfully'"}
+2. Call the complete API to report results:
+
+\`\`\`
+exec: {"command": "curl -s -X POST http://localhost:3000/api/projects/${task.projectId}/tasks/${task.id}/complete -H 'Content-Type: application/json' -d '{"result": "สรุปงานที่ทำ: 1. [อธิบายสั้นๆ] 2. ไฟล์ที่สร้าง: [ชื่อไฟล์] 3. ผลลัพธ์: [สรุปผล]", "artifacts": ["filename.ext"]}'"}
+\`\`\`
+
+### Memory Management
 **BEFORE starting:**
-Read the project memory to understand context:
+Read the project memory:
 \`\`\`
 read: {"file_path": "${memoryFilePath}"}
 \`\`\`
 
 **AFTER completing:**
-Update MEMORY.md with what you did:
-\`\`\`
-read: {"file_path": "${memoryFilePath}"}
-\`\`\`
-Then edit to append:
-\`\`\`
-edit: {"file_path": "${memoryFilePath}", "old_string": "---", "new_string": "## ${new Date().toISOString().split('T')[0]} - Task: ${task.title}\n- Summary: [What you did]\n- Files: [Files created/modified]\n- Key Points: [Important learnings]\n\n---"}
-\`\`\`
+Update MEMORY.md with what you did.
 
 ### Current Memory
 ${formattedMemory || 'No previous memory recorded. This is a fresh project.'}
-
-### Completion
-When done, call complete API with result and artifacts.
 
 ---
 Task: ${task.id}
