@@ -1,0 +1,12 @@
+{
+  "name": "a3-password-utils",
+  "version": "1.0.0",
+  "description": "Password hashing utility using bcrypt",
+  "main": "hashPassword.js",
+  "scripts": {
+    "test": "node example.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1"
+  }
+}

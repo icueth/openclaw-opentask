@@ -373,6 +373,25 @@ export function cleanupZombieTasks(): number {
           }
         }
 
+        // For TaskMan-spawned tasks: check if worker is still running via subagent tracking
+        if (!completedSuccessfully && task.assignedAgent?.includes('taskman')) {
+          console.log(`[Zombie Cleanup] Task ${task.id} used TaskMan, checking worker status...`)
+          // TaskMan exits after spawning worker, so we need to check worker log instead
+          const logFile = path.join(process.cwd(), 'data', 'task-contexts', `${task.id}.log`)
+          if (fs.existsSync(logFile)) {
+            try {
+              const log = fs.readFileSync(logFile, 'utf-8')
+              if (log.includes('completed') || log.includes('สำเร็จ') || log.includes('Task completed')) {
+                completedSuccessfully = true
+                console.log(`[Zombie Cleanup] Task ${task.id} worker completed successfully`)
+                updateTaskStatus(task.id, 'completed', 'Task completed via TaskMan worker')
+              }
+            } catch (e) {
+              // Log file read error
+            }
+          }
+        }
+
         if (!completedSuccessfully) {
           console.log(`[Zombie Cleanup] Task ${task.id} is dead, marking as failed`)
           updateTaskStatus(task.id, 'failed', 'Agent process terminated unexpectedly', {

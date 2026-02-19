@@ -1114,5 +1114,123 @@
     "assignedAgent": "coder:21203",
     "startedAt": "2026-02-19T10:15:22.522Z",
     "completedAt": "2026-02-19T10:18:17.523Z"
+  },
+  {
+    "projectId": "a3",
+    "title": "ทดสอบ",
+    "description": "สร้าง function hashpassword javascript",
+    "agentId": "taskman",
+    "priority": "medium",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771506469257-hdr0twyvc",
+    "status": "failed",
+    "createdAt": "2026-02-19T13:07:49.257Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T13:07:49.257Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T13:07:49.259Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T13:07:49.260Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T13:07:49.261Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T13:07:49.265Z",
+        "message": "Contacting TaskMan..."
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T13:07:55.195Z",
+        "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T13:08:07.645Z",
+        "message": "Worker spawned via TaskMan"
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T13:08:07.732Z",
+        "message": "Agent process terminated unexpectedly"
+      }
+    ],
+    "retryCount": 0,
+    "startedAt": "2026-02-19T13:07:49.265Z",
+    "error": "Process died or was killed",
+    "completedAt": "2026-02-19T13:07:55.195Z",
+    "assignedAgent": "agent:coordinator:subagent:60d1b21e-5251-4d0d-b868-d966387d4f43"
+  },
+  {
+    "projectId": "a3",
+    "title": "ทดสอบ",
+    "description": "สร้าง function hashpassword javascript",
+    "agentId": "taskman",
+    "priority": "medium",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771506475194-czpdw1nn4",
+    "status": "failed",
+    "createdAt": "2026-02-19T13:07:55.194Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T13:07:55.194Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T13:07:55.194Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T13:07:55.196Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T13:07:55.197Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T13:07:55.197Z",
+        "message": "Contacting TaskMan..."
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T13:07:58.398Z",
+        "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T13:08:16.384Z",
+        "message": "Worker spawned via TaskMan"
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T13:08:19.372Z",
+        "message": "Agent process terminated unexpectedly"
+      }
+    ],
+    "retryCount": 0,
+    "startedAt": "2026-02-19T13:07:55.197Z",
+    "error": "Process died or was killed",
+    "completedAt": "2026-02-19T13:07:58.398Z",
+    "assignedAgent": "agent:coordinator:subagent:60d1b21e-5251-4d0d-b868-d966387d4f43"
   }
 ]
