@@ -26,6 +26,12 @@ export function ensureServicesStarted(): void {
     console.log('[Startup] Queue processor already running')
   }
   
+  // Start task watcher for completion detection
+  console.log('[Startup] Starting task watcher...')
+  const { startTaskWatcher } = require('./taskWatcher')
+  startTaskWatcher()
+  console.log('[Startup] ✓ Task watcher started')
+  
   console.log('[Startup] ==========================================')
   console.log('[Startup] All services started successfully')
   console.log('[Startup] ==========================================')

@@ -1409,5 +1409,64 @@
     "error": "Process died or was killed",
     "completedAt": "2026-02-19T13:38:38.911Z",
     "assignedAgent": "agent:coordinator:subagent:54c0862f-e700-4f57-8efb-bc39c9cff83b"
+  },
+  {
+    "projectId": "a3",
+    "title": "Create Hash Password Function v4",
+    "description": "สร้าง function hashpassword javascript แบบใช้ crypto",
+    "agentId": "taskman",
+    "priority": "high",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771508579259-rzj455619",
+    "status": "failed",
+    "createdAt": "2026-02-19T13:42:59.258Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T13:42:59.258Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T13:42:59.260Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T13:42:59.261Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T13:42:59.261Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T13:42:59.263Z",
+        "message": "Contacting TaskMan..."
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T13:43:04.093Z",
+        "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T13:43:34.946Z",
+        "message": "Worker spawned via TaskMan"
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T13:44:04.104Z",
+        "message": "Agent process terminated unexpectedly"
+      }
+    ],
+    "retryCount": 0,
+    "startedAt": "2026-02-19T13:42:59.263Z",
+    "error": "Process died or was killed",
+    "completedAt": "2026-02-19T13:43:04.093Z",
+    "assignedAgent": "agent:coordinator:subagent:19690538-fec3-477e-a1b8-73a53a7e6e58"
   }
 ]

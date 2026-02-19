@@ -1,8 +1,8 @@
 {
   "name": "a3-password-utils",
   "version": "1.0.0",
-  "description": "Password hashing utility using bcrypt",
-  "main": "hashPassword.js",
+  "description": "Password hashing utility with bcrypt, scrypt, and PBKDF2 support",
+  "main": "index.js",
   "scripts": {
     "test": "node example.js"
   },
