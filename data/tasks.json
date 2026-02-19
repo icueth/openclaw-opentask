@@ -146,7 +146,7 @@
     "maxRetries": 2,
     "timeoutMinutes": 30,
     "id": "task-1771495844437-2lq14z3wf",
-    "status": "processing",
+    "status": "completed",
     "createdAt": "2026-02-19T10:10:44.437Z",
     "statusHistory": [
       {
@@ -1103,10 +1103,16 @@
         "status": "processing",
         "timestamp": "2026-02-19T10:15:22.522Z",
         "message": "Sub-agent spawned and processing"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T10:18:17.523Z",
+        "message": "✅ Task completed"
       }
     ],
     "retryCount": 0,
     "assignedAgent": "coder:21203",
-    "startedAt": "2026-02-19T10:15:22.522Z"
+    "startedAt": "2026-02-19T10:15:22.522Z",
+    "completedAt": "2026-02-19T10:18:17.523Z"
   }
 ]

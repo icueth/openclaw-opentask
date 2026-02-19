@@ -357,7 +357,19 @@ export async function executeTask(taskId: string): Promise<{ success: boolean; e
   // Build context
   const fullContext = buildTaskContext(task, agentConfig, project)
   
-  // Spawn agent directly via CLI (no coordinator needed)
+  // Check if daemon is available
+  const daemonAvailable = await isDaemonRunning()
+  
+  if (daemonAvailable) {
+    // Send task to daemon
+    const sent = await sendTaskToDaemon(task)
+    if (sent) {
+      updateTaskStatus(taskId, 'pending', 'Queued in daemon')
+      return { success: true }
+    }
+  }
+  
+  // Fallback: Spawn agent directly via CLI
   const spawnResult = await spawnViaCli(task, agentConfig, fullContext)
   if (!spawnResult.success) {
     updateTaskStatus(taskId, 'failed', 'Failed to spawn sub-agent', {
@@ -367,6 +379,71 @@ export async function executeTask(taskId: string): Promise<{ success: boolean; e
   }
   
   return { success: true }
+}
+
+// =====================================================
+// DAEMON INTEGRATION
+// =====================================================
+
+const DAEMON_STATE_FILE = path.join(process.cwd(), 'data', 'daemon-state.json')
+const DAEMON_MESSAGES_FILE = path.join(process.cwd(), 'data', 'daemon-messages.json')
+
+/**
+ * Check if daemon is running
+ */
+async function isDaemonRunning(): Promise<boolean> {
+  try {
+    if (!fs.existsSync(DAEMON_STATE_FILE)) {
+      return false
+    }
+    
+    const state = JSON.parse(fs.readFileSync(DAEMON_STATE_FILE, 'utf-8'))
+    
+    // Check if daemon was active recently (within 30 seconds)
+    if (state.lastActive) {
+      const lastActive = new Date(state.lastActive).getTime()
+      const now = Date.now()
+      const diffSeconds = (now - lastActive) / 1000
+      
+      return diffSeconds < 30
+    }
+    
+    return false
+  } catch (e) {
+    return false
+  }
+}
+
+/**
+ * Send task to daemon
+ */
+async function sendTaskToDaemon(task: any): Promise<boolean> {
+  try {
+    const message = {
+      type: 'spawn_task',
+      task: {
+        id: task.id,
+        projectId: task.projectId,
+        title: task.title,
+        description: task.description || task.title,
+        agentId: task.agentId
+      }
+    }
+    
+    // Append to daemon messages file
+    let messages: any[] = []
+    if (fs.existsSync(DAEMON_MESSAGES_FILE)) {
+      messages = JSON.parse(fs.readFileSync(DAEMON_MESSAGES_FILE, 'utf-8'))
+    }
+    messages.push(message)
+    fs.writeFileSync(DAEMON_MESSAGES_FILE, JSON.stringify(messages, null, 2))
+    
+    console.log(`[TaskRunner] Task ${task.id} sent to daemon`)
+    return true
+  } catch (e) {
+    console.error('[TaskRunner] Failed to send task to daemon:', e)
+    return false
+  }
 }
 
 // =====================================================
