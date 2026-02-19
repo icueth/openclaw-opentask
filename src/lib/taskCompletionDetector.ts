@@ -50,9 +50,10 @@ async function detectTaskCompletion(): Promise<void> {
       const status = await checkTaskStatus(task)
       
       if (status.hasCompleted) {
+        // Get project info for file details
+        const project = store.getProjectById(task.projectId)
         const fileDetails = status.outputFiles.map((f: string) => {
           try {
-            const project = (await import('./store')).store.getProjectById(task.projectId)
             if (project?.path) {
               const stat = fs.statSync(path.join(project.path, f))
               const size = stat.size > 1024 ? `${(stat.size / 1024).toFixed(1)}KB` : `${stat.size}B`
