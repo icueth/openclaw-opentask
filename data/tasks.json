@@ -1124,7 +1124,7 @@
     "maxRetries": 2,
     "timeoutMinutes": 30,
     "id": "task-1771506469257-hdr0twyvc",
-    "status": "failed",
+    "status": "completed",
     "createdAt": "2026-02-19T13:07:49.257Z",
     "statusHistory": [
       {
@@ -1166,6 +1166,11 @@
         "status": "failed",
         "timestamp": "2026-02-19T13:08:07.732Z",
         "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T17:16:06.545Z",
+        "message": "Task completed. Created: example.js, hashPassword-unified.js, hashPassword-v2.js, hashPassword-v3.js, hashPassword.js, index.js"
       }
     ],
     "retryCount": 0,
@@ -1183,7 +1188,7 @@
     "maxRetries": 2,
     "timeoutMinutes": 30,
     "id": "task-1771506475194-czpdw1nn4",
-    "status": "failed",
+    "status": "completed",
     "createdAt": "2026-02-19T13:07:55.194Z",
     "statusHistory": [
       {
@@ -1225,6 +1230,11 @@
         "status": "failed",
         "timestamp": "2026-02-19T13:08:19.372Z",
         "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T17:16:06.547Z",
+        "message": "Task completed. Created: example.js, hashPassword-unified.js, hashPassword-v2.js, hashPassword-v3.js, hashPassword.js, index.js"
       }
     ],
     "retryCount": 0,
@@ -1301,7 +1311,7 @@
     "maxRetries": 2,
     "timeoutMinutes": 30,
     "id": "task-1771508116811-us0h2ilvn",
-    "status": "failed",
+    "status": "completed",
     "createdAt": "2026-02-19T13:35:16.810Z",
     "statusHistory": [
       {
@@ -1343,6 +1353,11 @@
         "status": "failed",
         "timestamp": "2026-02-19T13:36:21.631Z",
         "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T17:16:06.548Z",
+        "message": "Task completed. Created: hashPassword-unified.js, hashPassword-v2.js, hashPassword-v3.js, index.js"
       }
     ],
     "retryCount": 0,
@@ -1360,7 +1375,7 @@
     "maxRetries": 2,
     "timeoutMinutes": 30,
     "id": "task-1771508314098-2lugd3b94",
-    "status": "failed",
+    "status": "completed",
     "createdAt": "2026-02-19T13:38:34.098Z",
     "statusHistory": [
       {
@@ -1402,6 +1417,11 @@
         "status": "failed",
         "timestamp": "2026-02-19T13:39:38.926Z",
         "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T17:16:06.549Z",
+        "message": "Task completed. Created: hashPassword-unified.js, hashPassword-v3.js, index.js"
       }
     ],
     "retryCount": 0,
@@ -1419,7 +1439,7 @@
     "maxRetries": 2,
     "timeoutMinutes": 30,
     "id": "task-1771508579259-rzj455619",
-    "status": "failed",
+    "status": "completed",
     "createdAt": "2026-02-19T13:42:59.258Z",
     "statusHistory": [
       {
@@ -1461,6 +1481,11 @@
         "status": "failed",
         "timestamp": "2026-02-19T13:44:04.104Z",
         "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T17:16:06.550Z",
+        "message": "Task completed. Created: hashPassword-unified.js, index.js"
       }
     ],
     "retryCount": 0,
@@ -1468,5 +1493,64 @@
     "error": "Process died or was killed",
     "completedAt": "2026-02-19T13:43:04.093Z",
     "assignedAgent": "agent:coordinator:subagent:19690538-fec3-477e-a1b8-73a53a7e6e58"
+  },
+  {
+    "projectId": "a3",
+    "title": "test task 1",
+    "description": "สร้าง golang function hash password with key",
+    "agentId": "taskman",
+    "priority": "medium",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771520945389-tokf99pdu",
+    "status": "failed",
+    "createdAt": "2026-02-19T17:09:05.389Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T17:09:05.389Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T17:09:05.390Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T17:09:05.392Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T17:09:05.392Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T17:09:05.395Z",
+        "message": "Contacting TaskMan..."
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T17:09:17.591Z",
+        "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T17:09:32.308Z",
+        "message": "Worker spawned via TaskMan"
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T17:09:32.646Z",
+        "message": "Agent process terminated unexpectedly"
+      }
+    ],
+    "retryCount": 0,
+    "startedAt": "2026-02-19T17:09:05.395Z",
+    "error": "Process died or was killed",
+    "completedAt": "2026-02-19T17:09:17.591Z",
+    "assignedAgent": "agent:coordinator:subagent:ea8a01f1-681b-448f-bc21-490b419c5104"
   }
 ]

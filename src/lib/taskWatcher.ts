@@ -19,9 +19,17 @@ export function startTaskWatcher(): void {
 
 async function checkTaskCompletion(): Promise<void> {
   try {
-    // Get all processing tasks
+    // Get all processing OR failed tasks (that might have actually completed)
     const { store } = await import('./store')
-    const tasks = store.getTasks().filter(t => t.status === 'processing')
+    const tasks = store.getTasks().filter(t => {
+      // Check processing tasks
+      if (t.status === 'processing') return true
+      // Check failed tasks that were spawned by TaskMan/subagent (might be false failures)
+      if (t.status === 'failed' && t.error?.includes('Process died') && t.assignedAgent?.includes('subagent')) {
+        return true
+      }
+      return false
+    })
     
     for (const task of tasks) {
       // Skip if no assigned agent (not spawned yet)
@@ -53,6 +61,9 @@ async function checkTaskCompletion(): Promise<void> {
           
           if (recentFiles.length > 0) {
             // Task likely completed - update status
+            if (task.status === 'failed') {
+              console.log(`[TaskWatcher] Task ${task.id} was marked failed but files exist. Recovering to completed.`)
+            }
             console.log(`[TaskWatcher] Task ${task.id} appears completed. Files: ${recentFiles.join(', ')}`)
             updateTaskStatus(task.id, 'completed', `Task completed. Created: ${recentFiles.join(', ')}`)
           }
