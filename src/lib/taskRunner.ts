@@ -243,7 +243,10 @@ writeProgress(pct, msg);
     const agentScript = `#!/bin/bash
 set -e
 
-echo $$ > "${pidFile}"
+LOG_FILE="${logFile}"
+PID_FILE="${pidFile}"
+
+echo $$ > "$PID_FILE"
 echo "=== Task ${task.id} Started ===" > "$LOG_FILE"
 echo "Time: $(date)" >> "$LOG_FILE"
 
@@ -257,7 +260,7 @@ openclaw agent \\
   --agent ${agentConfig.id} \\
   --message "$(cat "${promptFile}")" \\
   --thinking ${agentConfig.thinking || 'medium'} \\
-  --json 2>&1 | tee -a "${logFile}" || true
+  --json 2>&1 | tee -a "$LOG_FILE" || true
 
 report_progress 100 "✅ Task completed"
 `

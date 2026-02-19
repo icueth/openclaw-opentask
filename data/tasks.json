@@ -1232,5 +1232,64 @@
     "error": "Process died or was killed",
     "completedAt": "2026-02-19T13:07:58.398Z",
     "assignedAgent": "agent:coordinator:subagent:60d1b21e-5251-4d0d-b868-d966387d4f43"
+  },
+  {
+    "projectId": "a3",
+    "title": "Create Hash Password Function",
+    "description": "สร้าง function hashpassword javascript",
+    "agentId": "taskman",
+    "priority": "high",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771507824025-egoc80b6f",
+    "status": "failed",
+    "createdAt": "2026-02-19T13:30:24.025Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T13:30:24.025Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T13:30:24.027Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T13:30:24.028Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T13:30:24.029Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T13:30:24.032Z",
+        "message": "Contacting TaskMan..."
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T13:30:26.836Z",
+        "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T13:30:46.438Z",
+        "message": "Worker spawned via CLI"
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T13:30:56.182Z",
+        "message": "Agent process terminated unexpectedly"
+      }
+    ],
+    "retryCount": 0,
+    "startedAt": "2026-02-19T13:30:24.032Z",
+    "error": "Process died or was killed",
+    "completedAt": "2026-02-19T13:30:26.836Z",
+    "assignedAgent": "taskman:35504"
   }
 ]
