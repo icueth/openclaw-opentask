@@ -47,6 +47,36 @@ async function detectTaskCompletion(): Promise<void> {
     )
     
     for (const task of tasksToCheck) {
+      // Method 0: Check worker status file (MOST RELIABLE)
+      const workerStatus = await checkWorkerStatusFile(task)
+      
+      if (workerStatus) {
+        // Update progress if changed
+        if (workerStatus.percentage !== task.progress) {
+          console.log(`[TaskCompletion] Task ${task.id} progress updated: ${workerStatus.percentage}% - ${workerStatus.message}`)
+          // Store progress update in task
+          if (!task.progressUpdates) task.progressUpdates = []
+          task.progressUpdates.push({
+            percentage: workerStatus.percentage,
+            message: workerStatus.message,
+            timestamp: workerStatus.timestamp || new Date().toISOString()
+          })
+          task.progress = workerStatus.percentage
+          task.currentStep = workerStatus.message
+        }
+        
+        // Check if completed via status file
+        if (workerStatus.status === 'completed' || workerStatus.percentage === 100) {
+          const result = workerStatus.result || `Task completed. ${workerStatus.message}`
+          const artifacts = workerStatus.artifacts || []
+          
+          console.log(`[TaskCompletion] Task ${task.id} COMPLETED via status file.`)
+          updateTaskStatus(task.id, 'completed', `✅ ${result}`, { artifacts })
+          continue // Skip other checks
+        }
+      }
+      
+      // Fallback methods
       const status = await checkTaskStatus(task)
       
       if (status.hasCompleted) {
@@ -178,6 +208,34 @@ async function checkTaskStatus(task: any): Promise<TaskStatusInfo> {
   }
   
   return result
+}
+
+/**
+ * Check worker status file (written by the worker agent)
+ */
+async function checkWorkerStatusFile(task: any): Promise<{percentage: number, message: string, status: string, result?: string, artifacts?: string[], timestamp?: string} | null> {
+  const statusFile = path.join(process.cwd(), 'data', 'task-contexts', `${task.id}-worker-status.json`)
+  
+  if (!fs.existsSync(statusFile)) {
+    return null
+  }
+  
+  try {
+    const content = fs.readFileSync(statusFile, 'utf-8')
+    const status = JSON.parse(content)
+    
+    return {
+      percentage: status.percentage || 0,
+      message: status.message || 'Processing...',
+      status: status.status || 'processing',
+      result: status.result,
+      artifacts: status.artifacts,
+      timestamp: status.timestamp
+    }
+  } catch (e) {
+    console.error(`[TaskCompletion] Error reading status file for ${task.id}:`, e)
+    return null
+  }
 }
 
 // Backward compatibility

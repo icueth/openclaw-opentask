@@ -413,7 +413,7 @@ function buildTaskContext(task: any, agentConfig: AgentConfig, project: any): st
   const projectMemory = readMemorySync(task.projectId)
   const formattedMemory = formatMemoryForPrompt(projectMemory)
   const contextDir = path.join(process.cwd(), 'data', 'task-contexts')
-  const progressHelperPath = path.join(contextDir, `${task.id}-progress.js`)
+  const statusFilePath = path.join(contextDir, `${task.id}-worker-status.json`)
   
   return `## Task: ${task.title}
 
@@ -429,29 +429,29 @@ ${projectPath}
 - edit - Edit files
 - exec - Execute commands
 
-### ⚠️ CRITICAL: Progress Reporting
-You MUST report progress at EACH step using this exact command:
+### ⚠️ CRITICAL: Status File Tracking (MANDATORY)
+You MUST update the status file at EVERY progress step!
 
+Status file location: 
 \`\`\`
-exec: {"command": "node ${progressHelperPath} 20 '📝 Step 1: Analyzing requirements'"}
+${statusFilePath}
+\`\`\`
+
+**At each progress step, write to the status file:**
+\`\`\`
+write: {"file_path": "${statusFilePath}", "content": "{\\"percentage\\": 20, \\"message\\": \\"📝 Analyzing requirements...\\", \\"status\\": \\"processing\\", \\"timestamp\\": \\"${new Date().toISOString()}\\"}"}
 \`\`\`
 
 Progress checkpoints (REQUIRED):
-- 20% - Analyzing requirements and understanding the task
+- 20% - Analyzing requirements and reading memory
 - 40% - Planning implementation approach
-- 60% - Writing code and implementing solution
-- 80% - Testing and verifying the solution
-- 100% - Finalizing and completing
+- 60% - Writing code/creating content
+- 80% - Verifying and testing
+- 100% - Task completed
 
-Report progress AFTER completing each major step!
-
-### ⚠️ CRITICAL: Task Completion
-When you finish the task, you MUST:
-1. Report final progress: exec: {"command": "node ${progressHelperPath} 100 '✅ Task completed successfully'"}
-2. Call the complete API to report results:
-
+**When task is COMPLETE, write final status:**
 \`\`\`
-exec: {"command": "curl -s -X POST http://localhost:3000/api/projects/${task.projectId}/tasks/${task.id}/complete -H 'Content-Type: application/json' -d '{"result": "สรุปงานที่ทำ: 1. [อธิบายสั้นๆ] 2. ไฟล์ที่สร้าง: [ชื่อไฟล์] 3. ผลลัพธ์: [สรุปผล]", "artifacts": ["filename.ext"]}'"}
+write: {"file_path": "${statusFilePath}", "content": "{\\"percentage\\": 100, \\"message\\": \\"✅ Task completed successfully\\", \\"status\\": \\"completed\\", \\"result\\": \\"Summary of what was accomplished...\\", \\"artifacts\\": [\\"filename1\\", \\"filename2\\"], \\"timestamp\\": \\"${new Date().toISOString()}\\"}"}
 \`\`\`
 
 ### Memory Management
