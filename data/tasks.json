@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "projectId": "a1",
+    "title": "ทดสอบ",
+    "description": "สร้างระบบสุ่มตัวเลข javascript",
+    "agentId": "coder",
+    "priority": "medium",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771489693870-5us22w6vm",
+    "status": "completed",
+    "createdAt": "2026-02-19T08:28:13.870Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T08:28:13.870Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T08:28:13.870Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T08:28:13.871Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T08:28:13.871Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T08:28:13.964Z",
+        "message": "Sub-agent spawned and processing task"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T08:29:47.901Z",
+        "message": "✅ Task completed successfully"
+      }
+    ],
+    "retryCount": 0,
+    "assignedAgent": "sub-task-1771489693870-5us22w6vm-1771489693875",
+    "startedAt": "2026-02-19T08:28:13.964Z",
+    "completedAt": "2026-02-19T08:29:47.901Z"
+  }
+]
