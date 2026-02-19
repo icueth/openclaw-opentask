@@ -2,6 +2,10 @@
 
 A futuristic web dashboard for managing OpenClaw agents. Built with Next.js, TypeScript, and Tailwind CSS.
 
+**Created by:** [iCue](https://github.com/icueth)
+
+[![Donate](https://img.shields.io/badge/Donate-Support%20Development-blue?style=for-the-badge&logo=stripe)](https://buy.stripe.com/14A28sbLa5mJ8SM5qY2VG01)
+
 ![Dashboard](https://via.placeholder.com/800x400/0a0a0f/3b82f6?text=OpenClaw+OpenTask)
 
 ## ✨ Features
@@ -221,10 +225,18 @@ When you create an agent, the following files are automatically created:
 - Reinstall dependencies: `rm -rf node_modules && npm install`
 - Run type check: `npx tsc --noEmit`
 
+## 💝 Support the Project
+
+If you find OpenClaw OpenTask helpful, consider supporting the development:
+
+[![Donate](https://img.shields.io/badge/Donate-Support%20Development-blue?style=for-the-badge&logo=stripe)](https://buy.stripe.com/14A28sbLa5mJ8SM5qY2VG01)
+
+Your support helps keep the project alive and drives new features!
+
 ## 📄 License
 
 MIT License - See LICENSE file for details
 
 ---
 
-Built with ❤️ for OpenClaw
+Built with ❤️ by [iCue](https://github.com/icueth) for OpenClaw

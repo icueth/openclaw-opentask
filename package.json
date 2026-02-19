@@ -2,6 +2,7 @@
   "name": "openclaw-opentask",
   "version": "1.0.0",
   "description": "OpenClaw Monitoring Dashboard",
+  "author": "iCue <support@icue.dev>",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
