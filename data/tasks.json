@@ -46,5 +46,47 @@
     "assignedAgent": "sub-task-1771490362579-822srbkuh-1771490362584",
     "startedAt": "2026-02-19T08:39:22.680Z",
     "completedAt": "2026-02-19T08:40:00.316Z"
+  },
+  {
+    "projectId": "a2",
+    "title": "ทดสอบ2",
+    "description": "สร้าง golang function hash password",
+    "agentId": "coder",
+    "priority": "medium",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771491866041-4ov6ipb78",
+    "status": "failed",
+    "createdAt": "2026-02-19T09:04:26.041Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T09:04:26.041Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T09:04:26.042Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T09:04:26.042Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T09:04:26.043Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T09:04:26.157Z",
+        "message": "Failed to spawn sub-agent"
+      }
+    ],
+    "retryCount": 0,
+    "error": "Gateway error: 405 - Method Not Allowed",
+    "completedAt": "2026-02-19T09:04:26.157Z"
   }
 ]

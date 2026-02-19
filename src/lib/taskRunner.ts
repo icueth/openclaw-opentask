@@ -1,10 +1,12 @@
 /**
  * Task Runner - OpenClaw Core Native
- * Uses sessions_spawn for sub-agents with proper announce handling
+ * Uses openclaw CLI for sub-agents
  */
 
+import { spawn, exec } from 'child_process'
 import fs from 'fs'
 import path from 'path'
+import { promisify } from 'util'
 import { store } from './store'
 import { 
   updateTaskStatus, 
@@ -16,9 +18,7 @@ import {
 } from './memory'
 import { logSpawnEvent } from './spawnLogger'
 
-// Gateway configuration
-const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:18789'
-const GATEWAY_TOKEN = process.env.GATEWAY_TOKEN || ''
+const execAsync = promisify(exec)
 
 // Default workspace
 const DEFAULT_WORKSPACE_PATH = path.join(process.env.HOME || '', '.openclaw', 'workspace-coder')
@@ -179,84 +179,136 @@ ${formattedMemory || 'No previous memory recorded.'}
 }
 
 // =====================================================
-// SESSIONS SPAWN - OpenClaw Core Native
+// SPAWN SUB-AGENT VIA CLI
 // =====================================================
 
 /**
- * Spawn sub-agent using OpenClaw Core sessions_spawn
- * This uses the gateway API directly
+ * Spawn sub-agent using OpenClaw CLI
+ * This uses the openclaw command directly
  */
-async function spawnViaSessionsSpawn(
+async function spawnViaCli(
   task: any,
   agentConfig: AgentConfig,
   fullContext: string
-): Promise<{ success: boolean; runId?: string; sessionKey?: string; error?: string }> {
+): Promise<{ success: boolean; pid?: number; error?: string }> {
   
-  logSpawnEvent('SESSIONS_SPAWN', `Spawning sub-agent for task ${task.id}`, { agentId: agentConfig.id })
+  logSpawnEvent('CLI_SPAWN', `Spawning sub-agent for task ${task.id}`, { agentId: agentConfig.id })
   
   try {
-    // Write context to file for reference
+    // Write context to file
     const contextDir = path.join(process.cwd(), 'data', 'task-contexts')
     fs.mkdirSync(contextDir, { recursive: true })
+    
     const contextFile = path.join(contextDir, `${task.id}-context.md`)
     fs.writeFileSync(contextFile, fullContext, 'utf-8')
     
+    const promptFile = path.join(contextDir, `${task.id}-prompt.txt`)
+    fs.writeFileSync(promptFile, fullContext, 'utf-8')
+    
+    // Write progress helper
+    const progressFile = path.join(contextDir, `${task.id}.progress`)
+    const progressHelperPath = path.join(contextDir, `${task.id}-progress.js`)
+    const progressHelperScript = `
+const fs = require('fs');
+const path = require('path');
+const progressFile = '${progressFile}';
+function writeProgress(pct, msg) {
+  fs.mkdirSync(path.dirname(progressFile), { recursive: true });
+  fs.writeFileSync(progressFile, JSON.stringify({
+    percentage: parseInt(pct),
+    message: msg,
+    timestamp: Date.now()
+  }));
+  console.log('[PROGRESS]', pct + '% - ' + msg);
+}
+const [,, pct, msg] = process.argv;
+writeProgress(pct, msg);
+`
+    fs.writeFileSync(progressHelperPath, progressHelperScript)
+    fs.chmodSync(progressHelperPath, 0o755)
+    
     // Write initial progress
-    writeTaskProgressFile(task.id, 10, '🚀 Sub-agent spawning...')
+    writeTaskProgressFile(task.id, 10, '🚀 Sub-agent starting...')
     
-    // Call gateway sessions_spawn endpoint
-    const response = await fetch(`${GATEWAY_URL}/api/sessions_spawn`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(GATEWAY_TOKEN ? { 'Authorization': `Bearer ${GATEWAY_TOKEN}` } : {})
-      },
-      body: JSON.stringify({
-        task: fullContext,
-        agentId: agentConfig.id,
-        model: agentConfig.model,
-        thinking: agentConfig.thinking || 'medium',
-        runTimeoutSeconds: (task.timeoutMinutes || 30) * 60,
-        cleanup: 'keep'
-      })
+    // Create background script
+    const agentScriptPath = path.join(contextDir, `${task.id}-agent.sh`)
+    const logFile = path.join(contextDir, `${task.id}.log`)
+    const pidFile = path.join(contextDir, `${task.id}.pid`)
+    
+    const agentScript = `#!/bin/bash
+set -e
+
+TASK_ID="${task.id}"
+LOG_FILE="${logFile}"
+PID_FILE="${pidFile}"
+PROMPT_FILE="${promptFile}"
+PROGRESS_HELPER="${progressHelperPath}"
+
+# Report progress helper
+report_progress() {
+  node "$PROGRESS_HELPER" "$1" "$2" 2>/dev/null || true
+}
+
+# Write PID
+echo $$ > "$PID_FILE"
+
+# Log start
+echo "=== Task $TASK_ID Started ===" > "$LOG_FILE"
+echo "PID: $$" >> "$LOG_FILE"
+echo "Time: $(date)" >> "$LOG_FILE"
+echo "" >> "$LOG_FILE"
+
+report_progress 15 "📖 Reading task context..."
+
+# Run openclaw agent with the prompt
+openclaw agent \
+  --agent ${agentConfig.id} \
+  --message "$(cat "$PROMPT_FILE")" \
+  --thinking ${agentConfig.thinking || 'medium'} \
+  --json 2>&1 | tee -a "$LOG_FILE" || {
+    echo "Agent exited with code $?" >> "$LOG_FILE"
+    exit 1
+  }
+
+report_progress 100 "✅ Task completed"
+echo "=== Task Completed ===" >> "$LOG_FILE"
+`
+    
+    fs.writeFileSync(agentScriptPath, agentScript)
+    fs.chmodSync(agentScriptPath, 0o755)
+    
+    // Spawn the agent in background
+    const child = spawn('bash', [agentScriptPath], {
+      detached: true,
+      stdio: 'ignore'
     })
     
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Gateway error: ${response.status} - ${errorText}`)
-    }
+    child.unref()
     
-    const result = await response.json()
+    logSpawnEvent('CLI_SPAWN', `Sub-agent spawned with PID ${child.pid}`, { pid: child.pid })
     
-    logSpawnEvent('SESSIONS_SPAWN', `Sub-agent spawned successfully`, { 
-      runId: result.runId, 
-      sessionKey: result.childSessionKey 
-    })
-    
-    // Store sub-agent info
+    // Store info
     store.set(`subagent:${task.id}`, {
-      runId: result.runId,
-      sessionKey: result.childSessionKey,
+      pid: child.pid,
       agentId: agentConfig.id,
       startedAt: new Date().toISOString(),
-      status: 'running'
+      status: 'running',
+      logFile,
+      pidFile
     })
     
-    // Update task with assigned agent
+    // Update task status
     updateTaskStatus(task.id, 'processing', 'Sub-agent spawned and processing', {
-      assignedAgent: result.childSessionKey
+      assignedAgent: `${agentConfig.id}:${child.pid}`
     })
-    
-    writeTaskProgressFile(task.id, 15, '📖 Sub-agent reading task...')
     
     return {
       success: true,
-      runId: result.runId,
-      sessionKey: result.childSessionKey
+      pid: child.pid
     }
     
   } catch (error: any) {
-    logSpawnEvent('SESSIONS_SPAWN', `Failed to spawn sub-agent`, undefined, undefined, error.message)
+    logSpawnEvent('CLI_SPAWN', `Failed to spawn sub-agent`, undefined, undefined, error.message)
     return {
       success: false,
       error: error.message
@@ -269,7 +321,7 @@ async function spawnViaSessionsSpawn(
 // =====================================================
 
 /**
- * Execute a task using OpenClaw Core sessions_spawn
+ * Execute a task
  */
 export async function executeTask(taskId: string): Promise<{ success: boolean; error?: string }> {
   const task = getTaskById(taskId)
@@ -295,7 +347,7 @@ export async function executeTask(taskId: string): Promise<{ success: boolean; e
   const fullContext = buildTaskContext(task, agentConfig, project)
   
   // Spawn sub-agent
-  const spawnResult = await spawnViaSessionsSpawn(task, agentConfig, fullContext)
+  const spawnResult = await spawnViaCli(task, agentConfig, fullContext)
   
   if (!spawnResult.success) {
     updateTaskStatus(taskId, 'failed', 'Failed to spawn sub-agent', {
@@ -304,21 +356,21 @@ export async function executeTask(taskId: string): Promise<{ success: boolean; e
     return { success: false, error: spawnResult.error }
   }
   
-  // The sub-agent is now running
-  // It will report progress via the API
-  // When complete, it should call the complete API
-  // Or we can poll for status
-  
   return { success: true }
 }
 
 // =====================================================
-// TASK STATUS CHECK
+// SPAWN FOR TASK - Main entry point
 // =====================================================
 
-/**
- * Check sub-agent status via OpenClaw Core
- */
+export async function spawnForTask(taskId: string): Promise<{ success: boolean; error?: string }> {
+  return executeTask(taskId)
+}
+
+// =====================================================
+// CHECK STATUS
+// =====================================================
+
 export async function checkSubAgentStatus(taskId: string): Promise<{
   status: 'running' | 'completed' | 'failed' | 'unknown'
   result?: string
@@ -331,38 +383,23 @@ export async function checkSubAgentStatus(taskId: string): Promise<{
   }
   
   try {
-    // Get session history to check status
-    const response = await fetch(
-      `${GATEWAY_URL}/api/sessions_history?sessionKey=${encodeURIComponent(subagentInfo.sessionKey)}&limit=1`,
-      {
-        headers: GATEWAY_TOKEN ? { 'Authorization': `Bearer ${GATEWAY_TOKEN}` } : {}
-      }
-    )
+    // Check if process is still running
+    process.kill(subagentInfo.pid, 0)
     
-    if (!response.ok) {
-      return { status: 'unknown', error: 'Failed to check status' }
-    }
-    
-    const history = await response.json()
-    
-    // Check last message for completion
-    const lastMessage = history[history.length - 1]
-    if (lastMessage) {
-      // Check if it's a completion message
-      if (lastMessage.content?.includes('Task completed') || 
-          lastMessage.content?.includes('completed successfully')) {
-        return { status: 'completed', result: lastMessage.content }
-      }
-      if (lastMessage.content?.includes('failed') || 
-          lastMessage.content?.includes('error')) {
-        return { status: 'failed', error: lastMessage.content }
-      }
+    // Check progress file
+    const progress = readTaskProgressFile(taskId)
+    if (progress?.percentage === 100) {
+      return { status: 'completed', result: progress.message }
     }
     
     return { status: 'running' }
-    
-  } catch (error: any) {
-    return { status: 'unknown', error: error.message }
+  } catch (e) {
+    // Process is dead, check if completed successfully
+    const progress = readTaskProgressFile(taskId)
+    if (progress?.percentage === 100 || progress?.message?.includes('completed')) {
+      return { status: 'completed', result: progress.message }
+    }
+    return { status: 'failed', error: 'Process terminated' }
   }
 }
 
@@ -370,52 +407,20 @@ export async function checkSubAgentStatus(taskId: string): Promise<{
 // CANCEL TASK
 // =====================================================
 
-/**
- * Cancel a running task
- */
 export async function cancelTask(taskId: string): Promise<boolean> {
   const subagentInfo = store.get(`subagent:${taskId}`) as any
   
-  if (!subagentInfo?.runId) {
+  if (!subagentInfo?.pid) {
     return false
   }
   
   try {
-    // Use subagents tool to kill the run
-    const response = await fetch(`${GATEWAY_URL}/api/subagents`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(GATEWAY_TOKEN ? { 'Authorization': `Bearer ${GATEWAY_TOKEN}` } : {})
-      },
-      body: JSON.stringify({
-        action: 'kill',
-        target: subagentInfo.runId
-      })
-    })
-    
-    if (response.ok) {
-      updateTaskStatus(taskId, 'cancelled', 'Task cancelled by user')
-      return true
-    }
-    
-    return false
+    process.kill(subagentInfo.pid, 'SIGTERM')
+    updateTaskStatus(taskId, 'cancelled', 'Task cancelled by user')
+    return true
   } catch (error) {
-    console.error('Failed to cancel task:', error)
     return false
   }
-}
-
-// =====================================================
-// SPAWN FOR TASK - Main entry point for task queue
-// =====================================================
-
-/**
- * Spawn a sub-agent for a task (main entry point used by taskQueue)
- * This is the function that taskQueue calls to execute a task
- */
-export async function spawnForTask(taskId: string): Promise<{ success: boolean; error?: string }> {
-  return executeTask(taskId)
 }
 
 // =====================================================
