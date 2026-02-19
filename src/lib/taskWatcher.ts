@@ -21,15 +21,21 @@ async function checkTaskCompletion(): Promise<void> {
   try {
     // Get all processing OR failed tasks (that might have actually completed)
     const { store } = await import('./store')
-    const tasks = store.getTasks().filter(t => {
+    const allTasks = store.getTasks()
+    console.log(`[TaskWatcher] Checking ${allTasks.length} total tasks...`)
+    
+    const tasks = allTasks.filter(t => {
       // Check processing tasks
       if (t.status === 'processing') return true
       // Check failed tasks that were spawned by TaskMan/subagent (might be false failures)
       if (t.status === 'failed' && t.error?.includes('Process died') && t.assignedAgent?.includes('subagent')) {
+        console.log(`[TaskWatcher] Found failed task ${t.id} with subagent, will check for files`)
         return true
       }
       return false
     })
+    
+    console.log(`[TaskWatcher] Found ${tasks.length} tasks to check (${tasks.filter(t => t.status === 'failed').length} failed)`)
     
     for (const task of tasks) {
       // Skip if no assigned agent (not spawned yet)
