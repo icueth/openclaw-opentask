@@ -89,12 +89,12 @@ export function generateMemoryEntry(
   agentName: string = 'Unknown Agent'
 ): string {
   const timestamp = formatMemoryDate(new Date())
-  const filesModified = result.artifacts || task.artifacts || []
+  const filesModified = result.artifacts || []
   const summary = result.result || task.result || 'No result provided'
   const keyPoints = extractKeyPoints(summary)
   
   return `### ${timestamp} - Task: ${task.title}
-**Agent:** ${agentName} (${task.agentId})  
+**Agent:** ${agentName}  
 **Status:** ${task.status === 'completed' ? '✅ Completed' : '❌ Failed'}  
 **Files Modified:**
 ${filesModified.length > 0 
@@ -464,7 +464,7 @@ export async function logTaskToMemory(
     await initializeMemory(projectPath, projectInfo.name || 'Project')
     
     // Generate and append entry
-    const entryMarkdown = generateMemoryEntry(task, result, agentName || task.agentId)
+    const entryMarkdown = generateMemoryEntry(task, result, agentName || 'Dashboard Agent')
     console.log(`[Memory] Generated entry (${entryMarkdown.length} chars)`)
     
     await appendToMemoryFile(projectPath, entryMarkdown)

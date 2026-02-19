@@ -1855,7 +1855,7 @@
     "maxRetries": 2,
     "timeoutMinutes": 30,
     "id": "task-1771526304430-7p12qbnyq",
-    "status": "failed",
+    "status": "completed",
     "createdAt": "2026-02-19T18:38:24.430Z",
     "statusHistory": [
       {
@@ -1892,12 +1892,81 @@
         "status": "failed",
         "timestamp": "2026-02-19T18:48:29.284Z",
         "message": "Agent process terminated unexpectedly"
+      },
+      {
+        "status": "completed",
+        "timestamp": "2026-02-19T19:03:42.767Z",
+        "message": "✅ 🎉 Task completed successfully\n\nTask completed successfully"
       }
     ],
     "retryCount": 0,
     "startedAt": "2026-02-19T18:38:24.436Z",
     "assignedAgent": "agent:coordinator:subagent:f4ad2c25-bfd5-4178-8949-b38f7fcec185",
     "error": "Process died or was killed",
-    "completedAt": "2026-02-19T18:48:29.284Z"
+    "completedAt": "2026-02-19T18:48:29.284Z",
+    "artifacts": []
+  },
+  {
+    "projectId": "a2",
+    "title": "สร้างไฟล์.md และเนื้อหาคือ นิทานสั้นๆสักเรื่อง",
+    "description": "สร้างไฟล์.md และเนื้อหาคือ นิทานสั้นๆสักเรื่อง",
+    "agentId": "coder",
+    "priority": "urgent",
+    "maxRetries": 2,
+    "timeoutMinutes": 30,
+    "id": "task-1771527825554-zyupt6agh",
+    "status": "failed",
+    "createdAt": "2026-02-19T19:03:45.554Z",
+    "statusHistory": [
+      {
+        "status": "created",
+        "timestamp": "2026-02-19T19:03:45.554Z",
+        "message": "Task created"
+      },
+      {
+        "status": "pending",
+        "timestamp": "2026-02-19T19:03:45.560Z",
+        "message": "Task queued for processing"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T19:03:45.561Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "active",
+        "timestamp": "2026-02-19T19:03:45.562Z",
+        "message": "Task assigned to queue processor"
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T19:03:45.566Z",
+        "message": "Contacting TaskMan..."
+      },
+      {
+        "status": "processing",
+        "timestamp": "2026-02-19T19:04:11.646Z",
+        "message": "Worker spawned via TaskMan"
+      },
+      {
+        "status": "failed",
+        "timestamp": "2026-02-19T19:06:46.096Z",
+        "message": "Task process ended without creating output files"
+      }
+    ],
+    "retryCount": 0,
+    "startedAt": "2026-02-19T19:03:45.566Z",
+    "assignedAgent": "agent:coordinator:subagent:65caae6c-30ba-40a3-9f53-1d94c25bc5e7",
+    "completedAt": "2026-02-19T19:06:46.096Z"
+  },
+  {
+    "id": "task-1771531186251-h5r0od9wk",
+    "projectId": "a2",
+    "title": "Test task from API",
+    "description": "This is a test task",
+    "status": "processing",
+    "priority": "medium",
+    "createdAt": "2026-02-19T19:59:46.251Z",
+    "currentStep": "Starting task..."
   }
 ]

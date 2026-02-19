@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { taskQueue } from '@/lib/taskQueue'
+import { store } from '@/lib/store'
 
 // GET /api/tasks - List all tasks (optionally filtered)
 export async function GET(request: Request) {
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const status = searchParams.get('status')
     const projectId = searchParams.get('projectId')
     
-    let tasks = taskQueue.getAllTasks()
+    let tasks = store.getTasks()
     
     // Apply filters
     if (projectId) {

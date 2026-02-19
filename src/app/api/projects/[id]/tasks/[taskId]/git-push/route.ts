@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { taskQueue, Task } from '@/lib/taskQueue'
+import { createTask, getTaskById, Task } from '@/lib/taskQueue'
 import { store } from '@/lib/store'
 import { getAuthStatus, getProjectEffectiveAuth, testAuth, decryptCredential } from '@/lib/gitAuth'
 import { EncryptedData } from '@/types/gitAuth'
@@ -24,16 +24,9 @@ function buildGitCommitPrompt(
 ): string {
   const projectPath = project.workspace || project.path || ''
   
-  // Get artifacts/files created by the task
-  const artifacts = task.artifacts || []
-  const artifactList = artifacts.length > 0 
-    ? artifacts.map(a => `- ${a}`).join('\n')
-    : '- (All modified files in the project)'
-
-  // Build the file list for git add command
-  const filesToAdd = artifacts.length > 0
-    ? artifacts.map(a => `"${a}"`).join(' ')
-    : '.'
+  // Files to commit - default to all changes
+  const artifactList = '- (All modified files in the project)'
+  const filesToAdd = '.'
 
   // Clean task title for commit message
   const cleanTitle = task.title.replace(/"/g, '\\"').substring(0, 50)
@@ -206,15 +199,11 @@ async function createGitPushTask(
     // Build the git commit instructions with auth
     const gitInstructions = buildGitCommitPrompt(project, originalTask, authConfig, authStatus)
 
-    // Create the git push task
-    const gitTask = taskQueue.createTask({
-      projectId,
+    // Create the git push task (simplified - createTask now handles execution)
+    const gitTask = await createTask(projectId, {
       title: `Git Commit/Push: ${originalTask.title}`,
       description: `Auto-commit and push changes from task ${originalTask.id}\n\n${gitInstructions}`,
-      agentId: project.agentId,
-      priority: 'medium',
-      maxRetries: 1,
-      timeoutMinutes: 10
+      priority: 'medium'
     })
 
     return { success: true, task: gitTask }
@@ -250,7 +239,7 @@ export async function POST(
     }
 
     // Get the original task
-    const originalTask = taskQueue.getTaskById(taskId)
+    const originalTask = getTaskById(taskId)
     if (!originalTask) {
       console.log(`[GitPush] ERROR: Task not found`)
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
@@ -262,11 +251,11 @@ export async function POST(
       return NextResponse.json({ error: 'Task does not belong to this project' }, { status: 400 })
     }
 
-    // Check if task is completed or has artifacts
-    if (originalTask.status !== 'completed' && (!originalTask.artifacts || originalTask.artifacts.length === 0)) {
+    // Check if task is completed
+    if (originalTask.status !== 'completed') {
       console.log(`[GitPush] ERROR: Task not ready for git push`)
       return NextResponse.json({ 
-        error: 'Task must be completed or have artifacts before creating a git push task' 
+        error: 'Task must be completed before creating a git push task' 
       }, { status: 400 })
     }
 
@@ -296,20 +285,8 @@ export async function POST(
     const gitTask = result.task
     console.log(`[GitPush] Git push task created: ${gitTask.id}`)
 
-    // Auto-start the git task (move from created to pending)
-    console.log(`[GitPush] Auto-starting git task ${gitTask.id}...`)
-    taskQueue.startTask(gitTask.id)
-
-    // Process queue to spawn sub-agent immediately
-    try {
-      await taskQueue.processQueue()
-      console.log(`[GitPush] processQueue completed successfully`)
-    } catch (queueError: any) {
-      console.error(`[GitPush] processQueue FAILED:`, queueError.message)
-    }
-
-    // Get the updated task
-    const updatedTask = taskQueue.getTaskById(gitTask.id)
+    // Get the updated task (createTask now handles execution automatically)
+    const updatedTask = getTaskById(gitTask.id)
 
     const duration = Date.now() - startTime
     console.log(`[GitPush] ====== END (${duration}ms) ======`)

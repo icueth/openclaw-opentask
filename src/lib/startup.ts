@@ -1,9 +1,6 @@
 /**
- * Startup Module - Ensures all background services start when the server starts
- * Import this in layout.tsx or page.tsx to ensure services start
+ * Startup Module - Simple version
  */
-
-import { startQueueProcessor, isQueueProcessorRunning } from './taskQueue'
 
 let started = false
 
@@ -14,32 +11,22 @@ export function ensureServicesStarted(): void {
   started = true
   
   console.log('[Startup] ==========================================')
-  console.log('[Startup] Dashboard Services Starting...')
+  console.log('[Startup] OpenClaw Dashboard Starting...')
   console.log('[Startup] ==========================================')
   
-  // Start queue processor
-  if (!isQueueProcessorRunning()) {
-    console.log('[Startup] Starting queue processor...')
-    startQueueProcessor()
-    console.log('[Startup] ✓ Queue processor started')
-  } else {
-    console.log('[Startup] Queue processor already running')
-  }
-  
-  // Start task completion detector
-  console.log('[Startup] Starting task completion detector...')
-  const { startTaskCompletionDetector } = require('./taskCompletionDetector')
-  startTaskCompletionDetector()
-  console.log('[Startup] ✓ Task completion detector started')
+  // Start simple status detector
+  console.log('[Startup] Starting status detector...')
+  const { startStatusDetector } = require('./statusDetector')
+  startStatusDetector()
+  console.log('[Startup] ✓ Status detector started')
   
   console.log('[Startup] ==========================================')
-  console.log('[Startup] All services started successfully')
+  console.log('[Startup] Ready!')
   console.log('[Startup] ==========================================')
 }
 
 // Auto-start on module load (server-side only)
 if (typeof window === 'undefined') {
-  // Delay slightly to ensure all modules are loaded
   setTimeout(() => {
     ensureServicesStarted()
   }, 1000)

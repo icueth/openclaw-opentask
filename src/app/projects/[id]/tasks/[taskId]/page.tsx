@@ -18,7 +18,9 @@ import {
   CheckCircle, XOctagon, Activity, ChevronDown, GitBranch, FileCode, Rocket,
   BookOpen
 } from 'lucide-react'
-import { shouldShowGitPushButton, getArtifactFileList } from '@/lib/gitTask'
+// Git push functionality removed in simplified version
+const shouldShowGitPushButton = (_task?: Task) => false
+const getArtifactFileList = (_task?: Task) => []
 import WorkerPoolButton from '@/components/WorkerPoolButton'
 import Link from 'next/link'
 
@@ -248,12 +250,8 @@ export default function TaskDetailPage() {
         throw new Error(data.error || 'Failed to create git push task')
       }
       
-      setGitPushMessage(`Git push task created! Redirecting...`)
-      
-      // Redirect to the new git task after a short delay
-      setTimeout(() => {
-        router.push(`/projects/${projectId}/tasks/${data.gitTask.id}`)
-      }, 1500)
+      setGitPushMessage(`Git push initiated!`)
+      setGitPushLoading(false)
     } catch (err: any) {
       alert(`Failed to create git push task: ${err.message}`)
       setGitPushLoading(false)

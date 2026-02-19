@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { taskQueue } from '@/lib/taskQueue'
+import { getTaskById, updateTaskStatus } from '@/lib/taskQueue'
 import { store } from '@/lib/store'
 import fs from 'fs'
 
@@ -30,7 +30,7 @@ export async function POST(
     }
     
     // Get task
-    const task = taskQueue.getTaskById(taskId)
+    const task = getTaskById(taskId)
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
@@ -40,13 +40,12 @@ export async function POST(
       return NextResponse.json({ error: 'Task does not belong to this project' }, { status: 403 })
     }
     
-    // Auto-set progress to 100% when failing (task is done, even if failed)
-    await store.updateTaskProgress(taskId, 100, `Task failed: ${body.error || 'Unknown error'}`)
-    
     // Mark as failed
-    taskQueue.onTaskError(taskId, body.error || 'Unknown error')
+    updateTaskStatus(taskId, 'failed', `Task failed: ${body.error || 'Unknown error'}`, {
+      error: body.error || 'Unknown error'
+    })
     
-    const failedTask = taskQueue.getTaskById(taskId)
+    const failedTask = getTaskById(taskId)
     
     console.log(`[Fail API] Task ${taskId} marked as failed`)
     

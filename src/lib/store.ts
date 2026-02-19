@@ -138,8 +138,8 @@ export interface Task {
   id: string
   projectId: string
   title: string
-  description: string
-  agentId: string
+  description?: string
+  agentId?: string
   status: 'created' | 'pending' | 'active' | 'processing' | 'completed' | 'failed' | 'cancelled'
   priority: 'low' | 'medium' | 'high' | 'urgent'
   createdAt: string
@@ -152,7 +152,7 @@ export interface Task {
   retryCount?: number
   maxRetries?: number
   timeoutMinutes?: number
-  statusHistory: StatusChange[]
+  statusHistory?: StatusChange[]
   progress?: number
   progressUpdates?: ProgressUpdate[]
   currentStep?: string

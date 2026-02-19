@@ -4,7 +4,6 @@ import path from 'path'
 import { store, PROJECTS_DIR } from '@/lib/store'
 import { homedir } from 'os'
 import { cloneRepository, getRepoInfo, generateGitHubProjectMd, validateGitHubUrl } from '@/lib/git'
-import { createInitTask } from '@/lib/initTask'
 
 // Read agent config from openclaw.json
 function getAgentConfig(agentId: string): { id: string; name: string; workspace: string } | null {
@@ -351,30 +350,11 @@ export async function POST(request: Request) {
       // Ignore
     }
 
-    // If githubUrl provided, auto-create init task for analysis
+    // Project created successfully
     let initTask = null
     if (githubUrl && cloneResult?.success) {
-      try {
-        const initTaskResult = await createInitTask(
-          projectId,
-          projectPath,
-          cloneResult.repoName,
-          githubUrl,
-          agentId
-        )
-        initTask = {
-          id: initTaskResult.task.id,
-          title: initTaskResult.task.title,
-          message: 'Init task created and queued for analysis'
-        }
-        console.log(`[API] Created init task ${initTaskResult.task.id} for project ${projectId}`)
-      } catch (initError: any) {
-        console.error(`[API] Failed to create init task:`, initError.message)
-        // Don't fail the project creation if init task fails
-        initTask = {
-          error: 'Failed to create init task',
-          details: initError.message
-        }
+      initTask = {
+        message: 'Project created with GitHub repository'
       }
     }
 

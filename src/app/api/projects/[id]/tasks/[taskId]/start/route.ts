@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
-import { taskQueue } from '@/lib/taskQueue'
+import { getTaskById, updateTaskStatus } from '@/lib/taskQueue'
+import { executeTask } from '@/lib/taskRunner'
 import { store } from '@/lib/store'
 import fs from 'fs'
 
-// POST /api/projects/[id]/tasks/[taskId]/start - Manually start task
+// POST /api/projects/[id]/tasks/[taskId]/start - Manually start/restart task
 export async function POST(
   request: Request,
   { params }: { params: { id: string; taskId: string } }
@@ -23,7 +24,7 @@ export async function POST(
     }
     
     // Get task
-    const task = taskQueue.getTaskById(taskId)
+    const task = getTaskById(taskId)
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
@@ -33,23 +34,20 @@ export async function POST(
       return NextResponse.json({ error: 'Task does not belong to this project' }, { status: 403 })
     }
     
-    // Start task
+    // Update status and restart execution
     console.log(`[API] Manually starting task ${taskId}`)
-    taskQueue.startTask(taskId)
+    updateTaskStatus(taskId, 'pending', 'Task manually restarted')
     
-    // Immediately try to process queue
-    console.log(`[API] Processing queue after manual start for task ${taskId}`)
-    taskQueue.processQueue().then(() => {
-      const updatedTask = taskQueue.getTaskById(taskId)
-      console.log(`[API] Manual start processing complete for ${taskId}, status: ${updatedTask?.status}`)
-    }).catch(err => {
-      console.error(`[API] Error processing queue for manual start ${taskId}:`, err)
+    // Trigger execution
+    executeTask(taskId, projectId, task.title, task.description || '').catch(err => {
+      console.error(`[Start API] Execution error:`, err)
+      updateTaskStatus(taskId, 'failed', err.message)
     })
     
     return NextResponse.json({
       success: true,
       message: 'Task started and queued for processing',
-      task: taskQueue.getTaskById(taskId)
+      task: getTaskById(taskId)
     })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })

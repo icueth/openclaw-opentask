@@ -31,8 +31,7 @@ export async function POST(
         id: taskId,
         projectId,
         title: task.title,
-        description: task.description || task.title,
-        agentId: task.agentId
+        description: task.description || task.title
       }
     }
     

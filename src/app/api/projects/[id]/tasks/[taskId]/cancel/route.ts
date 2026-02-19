@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { taskQueue } from '@/lib/taskQueue'
+import { getTaskById, updateTaskStatus } from '@/lib/taskQueue'
 import { store } from '@/lib/store'
 import fs from 'fs'
 
@@ -23,7 +23,7 @@ export async function POST(
     }
     
     // Get task
-    const task = taskQueue.getTaskById(taskId)
+    const task = getTaskById(taskId)
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
@@ -33,13 +33,13 @@ export async function POST(
       return NextResponse.json({ error: 'Task does not belong to this project' }, { status: 403 })
     }
     
-    // Cancel task (sub-agent will timeout naturally)
-    taskQueue.cancelTask(taskId)
+    // Cancel task by updating status (sub-agent will timeout naturally)
+    updateTaskStatus(taskId, 'failed', 'Task cancelled by user')
     
     return NextResponse.json({
       success: true,
       message: 'Task cancelled',
-      task: taskQueue.getTaskById(taskId)
+      task: getTaskById(taskId)
     })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })

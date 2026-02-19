@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { store } from '@/lib/store'
-import { getTaskById, processQueue } from '@/lib/taskQueue'
+import { createTask, getTaskById } from '@/lib/taskQueue'
 
 // POST /api/projects/[id]/git-pull - Create a pull task
 export async function POST(
@@ -29,43 +29,20 @@ export async function POST(
       )
     }
 
-    // Create a pull task
-    const taskId = `task-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
-    const task = {
-      id: taskId,
-      projectId,
+    // Create a pull task using the simplified createTask
+    const task = await createTask(projectId, {
       title: `🔄 Pull from ${branch}`,
       description: `Pull latest changes from GitHub branch: ${branch}`,
-      agentId: 'coder', // Use coder agent for git operations
-      priority: 'high' as const,
-      status: 'pending' as const,
-      createdAt: new Date().toISOString(),
-      statusHistory: [{
-        status: 'pending' as const,
-        timestamp: new Date().toISOString(),
-        message: 'Git pull task queued'
-      }],
-      retryCount: 0,
-      maxRetries: 2,
-      timeoutMinutes: 10,
-      progress: 0
-    }
-
-    // Store task using createTask
-    store.createTask(task)
-
-    // Start queue processing
-    setTimeout(() => {
-      processQueue().catch(console.error)
-    }, 100)
+      priority: 'high'
+    })
 
     return NextResponse.json({
       success: true,
       message: 'Git pull task created',
       task: {
-        id: taskId,
+        id: task.id,
         title: task.title,
-        status: 'pending'
+        status: task.status
       }
     })
   } catch (error: any) {

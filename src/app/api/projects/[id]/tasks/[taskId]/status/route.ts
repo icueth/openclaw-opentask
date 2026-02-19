@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { taskQueue } from '@/lib/taskQueue'
+import { getTaskById } from '@/lib/taskQueue'
 import fs from 'fs'
 import path from 'path'
 
@@ -12,7 +12,7 @@ export async function GET(
     const { id: projectId, taskId } = await Promise.resolve(params)
     
     // Get task
-    const task = taskQueue.getTaskById(taskId)
+    const task = getTaskById(taskId)
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }

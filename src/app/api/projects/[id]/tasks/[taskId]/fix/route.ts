@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { store } from '@/lib/store'
-import { getTaskById, updateTask, updateTaskStatus, processQueue } from '@/lib/taskQueue'
-import { readTaskProgressFile } from '@/lib/taskRunner'
+import { getTaskById, updateTaskStatus } from '@/lib/taskQueue'
+import { checkTaskStatusFromFile, executeTask } from '@/lib/taskRunner'
 
 export async function POST(
   request: NextRequest,
@@ -41,7 +41,7 @@ export async function POST(
     switch (action) {
       case 'check': {
         // Check progress from file
-        const progressData = readTaskProgressFile(taskId)
+        const progressData = checkTaskStatusFromFile(taskId)
 
         // Calculate how long task has been processing
         let processingDuration = null
@@ -58,39 +58,30 @@ export async function POST(
             status: task.status,
             assignedAgent: task.assignedAgent,
             currentProgress: progressData?.percentage,
-            currentStep: progressData?.message,
+            currentStep: progressData?.message || task.currentStep,
             processingDuration,
-            isStuck: task.status === 'processing' && processingDuration && processingDuration > 5,
-            lastUpdate: task.statusHistory[task.statusHistory.length - 1]
+            isStuck: task.status === 'processing' && processingDuration !== null && processingDuration > 5
           }
         })
       }
 
       case 'restart': {
         // Only allow restart for stuck or failed tasks
-        if (task.status !== 'processing' && task.status !== 'failed' && task.status !== 'cancelled') {
+        if (task.status !== 'processing' && task.status !== 'failed') {
           return NextResponse.json(
             { success: false, error: `Cannot restart task with status: ${task.status}` },
             { status: 400 }
           )
         }
 
-        // Clear progress for fresh start
-        store.clearTaskProgress(taskId)
-
-        // Reset task to pending
-        updateTask(taskId, {
-          status: 'pending',
-          assignedAgent: undefined,
-          error: undefined,
-          retryCount: (task.retryCount || 0) + 1,
-          completedAt: undefined
-        })
-
+        // Reset task to pending and re-execute
         updateTaskStatus(taskId, 'pending', 'Task restarted by user')
 
-        // Trigger queue processing
-        await processQueue()
+        // Re-trigger execution
+        executeTask(taskId, projectId, task.title, task.description || '').catch(err => {
+          console.error(`[Fix API] Restart execution error:`, err)
+          updateTaskStatus(taskId, 'failed', err.message)
+        })
 
         return NextResponse.json({
           success: true,
@@ -101,7 +92,7 @@ export async function POST(
 
       case 'force-complete': {
         // Only allow force-complete for processing tasks
-        if (task.status !== 'processing' && task.status !== 'active' && task.status !== 'pending') {
+        if (task.status !== 'processing' && task.status !== 'pending') {
           return NextResponse.json(
             { success: false, error: `Cannot force-complete task with status: ${task.status}` },
             { status: 400 }
@@ -113,15 +104,8 @@ export async function POST(
         updateTaskStatus(
           taskId,
           'completed',
-          `Force completed: ${note}`,
-          {
-            result: note,
-            completedAt: new Date().toISOString()
-          }
+          `Force completed: ${note}`
         )
-        
-        // Also update progress to 100%
-        store.updateTaskProgress(taskId, 100, note)
 
         return NextResponse.json({
           success: true,
@@ -131,8 +115,8 @@ export async function POST(
       }
 
       case 'force-fail': {
-        // Only allow force-fail for processing or active tasks
-        if (task.status !== 'processing' && task.status !== 'active' && task.status !== 'pending') {
+        // Only allow force-fail for processing or pending tasks
+        if (task.status !== 'processing' && task.status !== 'pending') {
           return NextResponse.json(
             { success: false, error: `Cannot force-fail task with status: ${task.status}` },
             { status: 400 }
@@ -145,10 +129,7 @@ export async function POST(
           taskId,
           'failed',
           `Force failed: ${reason}`,
-          {
-            error: reason,
-            completedAt: new Date().toISOString()
-          }
+          { error: reason }
         )
 
         return NextResponse.json({

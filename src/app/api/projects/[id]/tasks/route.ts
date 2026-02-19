@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
-import { taskQueue, Task } from '@/lib/taskQueue'
+import { getTasksByProject, createTask, Task } from '@/lib/taskQueue'
 import { store } from '@/lib/store'
 import fs from 'fs'
 import path from 'path'
-import { homedir } from 'os'
 
 // GET /api/projects/[id]/tasks - List tasks for project
 export async function GET(
@@ -29,7 +28,7 @@ export async function GET(
     
     console.log(`[GET /api/projects/${projectId}/tasks] Filters - status: ${status}, priority: ${priority}`)
     
-    let tasks = taskQueue.getTasksByProject(projectId)
+    let tasks = getTasksByProject(projectId)
     console.log(`[GET /api/projects/${projectId}/tasks] Found ${tasks.length} total tasks`)
     
     // Apply filters
@@ -114,62 +113,23 @@ export async function POST(
     
     console.log(`[POST /api/projects/${projectId}/tasks] Using agentId: ${agentId} (from ${body.agentId ? 'request' : 'project'})`)
     
-    // Check if agent exists in openclaw.json
-    try {
-      const configPath = path.join(homedir(), '.openclaw', 'openclaw.json')
-      console.log(`[POST /api/projects/${projectId}/tasks] Checking agent config at: ${configPath}`)
-      const configData = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
-      const agents = configData.agents?.list || []
-      const agentExists = agents.some((a: any) => a.id === agentId)
-      
-      console.log(`[POST /api/projects/${projectId}/tasks] Agent exists: ${agentExists}, available agents: ${agents.map((a: any) => a.id).join(', ')}`)
-      
-      if (!agentExists) {
-        console.log(`[POST /api/projects/${projectId}/tasks] ERROR: Agent "${agentId}" not found`)
-        return NextResponse.json({ error: `Agent "${agentId}" not found` }, { status: 404 })
-      }
-    } catch (e: any) {
-      console.warn(`[POST /api/projects/${projectId}/tasks] Could not verify agent existence:`, e.message)
-    }
-    
-    // Create task
+    // Create task (simplified - createTask handles execution automatically)
     console.log(`[POST /api/projects/${projectId}/tasks] Creating task...`)
-    const task = taskQueue.createTask({
-      projectId,
+    const task = await createTask(projectId, {
       title: body.title,
       description: body.description || '',
-      agentId: agentId,
-      priority: body.priority || 'medium',
-      maxRetries: body.maxRetries,
-      timeoutMinutes: body.timeoutMinutes
+      priority: body.priority || 'medium'
     })
     console.log(`[POST /api/projects/${projectId}/tasks] Task created: ${task.id}, status: ${task.status}`)
-    
-    // Auto-start if requested (move from created to pending)
-    if (body.autoStart !== false) {
-      console.log(`[POST /api/projects/${projectId}/tasks] Auto-starting task ${task.id}...`)
-      taskQueue.startTask(task.id)
-      console.log(`[POST /api/projects/${projectId}/tasks] Task ${task.id} started, new status: ${taskQueue.getTaskById(task.id)?.status}`)
-    }
-    
-    // Process queue in background (don't block the API response)
-    console.log(`[POST /api/projects/${projectId}/tasks] Triggering background queue processing for task ${task.id}...`)
-    
-    // Run processQueue in background without awaiting
-    taskQueue.processQueue().then(() => {
-      console.log(`[POST /api/projects/${projectId}/tasks] Background processQueue completed`)
-    }).catch((queueError: any) => {
-      console.error(`[POST /api/projects/${projectId}/tasks] Background processQueue FAILED:`, queueError.message)
-    })
     
     const duration = Date.now() - startTime
     console.log(`[POST /api/projects/${projectId}/tasks] ====== END (${duration}ms) ======`)
     
-    // Return immediately with the created task (status will be 'pending' or 'processing')
+    // Return immediately with the created task (status will be 'processing')
     return NextResponse.json({
       success: true,
       task: task,
-      message: 'Task created and queued for processing'
+      message: 'Task created and execution started'
     }, { status: 201 })
   } catch (error: any) {
     console.error(`[POST /api/projects/${params.id}/tasks] UNEXPECTED ERROR:`, error.message)
