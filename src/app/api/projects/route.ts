@@ -207,15 +207,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Project ID must be lowercase alphanumeric with hyphens only' }, { status: 400 })
     }
 
-    // Get agent configuration
-    const agentId = body.agentId
-    if (!agentId) {
-      return NextResponse.json({ error: 'Agent ID is required' }, { status: 400 })
-    }
-
-    // Get agent info for display only
-    const agentConfig = getAgentConfig(agentId)
-    const agentName = agentConfig?.name || agentId
+    // Use taskman as default agent (system-wide task executor)
+    const agentId = body.agentId || 'taskman'
+    const agentName = 'TaskMan'
 
     // Build project path in dashboard's data/projects folder (portable!)
     const projectsRoot = PROJECTS_DIR

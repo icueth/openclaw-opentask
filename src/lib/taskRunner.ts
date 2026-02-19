@@ -161,8 +161,19 @@ TargetAgent: ${task.agentId || 'coder'}
 Model: ${settings.taskModel}
 Thinking: ${settings.taskThinking}
 
+⚠️ IMPORTANT: This task requires MEMORY MANAGEMENT
+
+Before spawning the worker:
+1. Read MEMORY.md from the project
+2. Include relevant context in the worker's task
+
+After the worker completes:
+3. Update MEMORY.md with the task results
+4. Log key decisions and learnings
+
 Please use sessions_spawn to create a worker agent for this task.
 The worker should use the specified Model and Thinking level.
+Ensure the worker reads and updates MEMORY.md.
 
 Task Context:
 ${context.substring(0, 1000)}`
@@ -319,6 +330,7 @@ function getAgentConfig(agentId: string): AgentConfig | null {
 
 function buildTaskContext(task: any, agentConfig: AgentConfig, project: any): string {
   const projectPath = project?.path || path.join(DEFAULT_WORKSPACE_PATH, 'projects', task.projectId)
+  const memoryFilePath = path.join(projectPath, 'MEMORY.md')
   const projectMemory = readMemorySync(task.projectId)
   const formattedMemory = formatMemoryForPrompt(projectMemory)
   
@@ -336,14 +348,33 @@ ${projectPath}
 - edit - Edit files
 - exec - Execute commands
 
-### Progress
+### Progress Tracking (REQUIRED)
 Report progress at 20%, 40%, 60%, 80%, 100%
+
+### Memory Management (CRITICAL)
+⚠️ YOU MUST READ AND UPDATE MEMORY ⚠️
+
+**BEFORE starting:**
+Read the project memory to understand context:
+\`\`\`
+read: {"file_path": "${memoryFilePath}"}
+\`\`\`
+
+**AFTER completing:**
+Update MEMORY.md with what you did:
+\`\`\`
+read: {"file_path": "${memoryFilePath}"}
+\`\`\`
+Then edit to append:
+\`\`\`
+edit: {"file_path": "${memoryFilePath}", "old_string": "---", "new_string": "## ${new Date().toISOString().split('T')[0]} - Task: ${task.title}\n- Summary: [What you did]\n- Files: [Files created/modified]\n- Key Points: [Important learnings]\n\n---"}
+\`\`\`
+
+### Current Memory
+${formattedMemory || 'No previous memory recorded. This is a fresh project.'}
 
 ### Completion
 When done, call complete API with result and artifacts.
-
-### Memory
-${formattedMemory || 'No previous memory'}
 
 ---
 Task: ${task.id}
