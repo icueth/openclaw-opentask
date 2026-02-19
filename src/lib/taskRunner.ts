@@ -16,6 +16,7 @@ import {
   formatMemoryForPrompt
 } from './memory'
 import { logSpawnEvent } from './spawnLogger'
+import { submitTaskToCoordinator } from './agentCoordinator'
 
 // Default workspace
 const DEFAULT_WORKSPACE_PATH = path.join(process.env.HOME || '', '.openclaw', 'workspace-coder')
@@ -357,14 +358,32 @@ export async function executeTask(taskId: string): Promise<{ success: boolean; e
   // Build context
   const fullContext = buildTaskContext(task, agentConfig, project)
   
-  // Spawn sub-agent
-  const spawnResult = await spawnViaCli(task, agentConfig, fullContext)
+  // Write context to file for coordinator
+  const contextDir = path.join(process.cwd(), 'data', 'task-contexts')
+  fs.mkdirSync(contextDir, { recursive: true })
+  const contextFile = path.join(contextDir, `${taskId}-context.md`)
+  fs.writeFileSync(contextFile, fullContext, 'utf-8')
   
-  if (!spawnResult.success) {
-    updateTaskStatus(taskId, 'failed', 'Failed to spawn sub-agent', {
-      error: spawnResult.error
-    })
-    return { success: false, error: spawnResult.error }
+  // Submit task to coordinator (which will use sessions_spawn)
+  const submitted = submitTaskToCoordinator({
+    taskId,
+    projectId: task.projectId,
+    title: task.title,
+    description: task.description || task.title,
+    agentId: task.agentId
+  })
+  
+  if (!submitted) {
+    // Fallback to direct CLI spawn if coordinator not available
+    const spawnResult = await spawnViaCli(task, agentConfig, fullContext)
+    if (!spawnResult.success) {
+      updateTaskStatus(taskId, 'failed', 'Failed to spawn sub-agent', {
+        error: spawnResult.error
+      })
+      return { success: false, error: spawnResult.error }
+    }
+  } else {
+    updateTaskStatus(taskId, 'pending', 'Waiting for coordinator...')
   }
   
   return { success: true }
