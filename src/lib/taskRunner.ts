@@ -23,6 +23,24 @@ const execAsync = promisify(exec)
 // Default workspace
 const DEFAULT_WORKSPACE_PATH = path.join(process.env.HOME || '', '.openclaw', 'workspace-coder')
 
+// System Settings
+const SETTINGS_FILE = path.join(process.cwd(), 'data', 'system-settings.json')
+const TASKMAN_AGENT_ID = 'taskman'
+
+function getSystemSettings() {
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'))
+    }
+  } catch (e) {}
+  return {
+    gatewayToken: process.env.GATEWAY_TOKEN || '',
+    gatewayPassword: '',
+    taskModel: 'kimi-coding/kimi-for-coding',
+    taskThinking: 'medium'
+  }
+}
+
 // =====================================================
 // PROGRESS TRACKING
 // =====================================================
@@ -58,32 +76,32 @@ function writeTaskProgressFile(taskId: string, percentage: number, message: stri
 // =====================================================
 
 /**
- * Spawn worker via Coordinator Agent using sessions_spawn
+ * Spawn worker via TaskMan Agent using sessions_spawn
  * This uses the actual OpenClaw sessions_spawn tool
  */
-async function spawnViaCoordinator(
+async function spawnViaTaskMan(
   task: any,
   fullContext: string
 ): Promise<{ success: boolean; sessionKey?: string; error?: string }> {
   
-  logSpawnEvent('COORDINATOR_SPAWN', `Spawning via coordinator for task ${task.id}`, { agentId: task.agentId })
+  logSpawnEvent('TASKMAN_SPAWN', `Spawning via taskman for task ${task.id}`, { agentId: task.agentId })
   
   try {
-    // Build coordinator message with [DASHBOARD] prefix
-    const coordinatorMessage = buildCoordinatorMessage(task, fullContext)
+    // Build taskman message with [DASHBOARD] prefix
+    const taskmanMessage = buildTaskManMessage(task, fullContext)
     
     // Write message to temp file (to avoid shell escaping issues)
     const messageFile = path.join(PROGRESS_DIR, `${task.id}-message.txt`)
     fs.mkdirSync(PROGRESS_DIR, { recursive: true })
-    fs.writeFileSync(messageFile, coordinatorMessage, 'utf-8')
+    fs.writeFileSync(messageFile, taskmanMessage, 'utf-8')
     
     // Initial progress
     writeTaskProgressFile(task.id, 15, '📡 Sending to Coordinator...')
     
-    // Call openclaw agent coordinator
+    // Call openclaw agent taskman
     const { stdout, stderr } = await execAsync(
-      `openclaw agent --agent coordinator -m "$(cat ${messageFile})" --thinking medium`,
-      { timeout: 60000 } // 60 second timeout for coordinator response
+      `openclaw agent --agent ${TASKMAN_AGENT_ID} -m "$(cat ${messageFile})" --thinking medium`,
+      { timeout: 60000 } // 60 second timeout for taskman response
     )
     
     // Parse response
@@ -129,17 +147,22 @@ async function spawnViaCoordinator(
 }
 
 /**
- * Build message for Coordinator Agent
+ * Build message for TaskMan Agent
  */
-function buildCoordinatorMessage(task: any, context: string): string {
+function buildTaskManMessage(task: any, context: string): string {
+  const settings = getSystemSettings()
+  
   return `[DASHBOARD] Task Request
 ID: ${task.id}
 Project: ${task.projectId}
 Title: ${task.title}
 Description: ${task.description || task.title}
-Agent: ${task.agentId}
+TargetAgent: ${task.agentId || 'coder'}
+Model: ${settings.taskModel}
+Thinking: ${settings.taskThinking}
 
 Please use sessions_spawn to create a worker agent for this task.
+The worker should use the specified Model and Thinking level.
 
 Task Context:
 ${context.substring(0, 1000)}`
@@ -328,7 +351,7 @@ Started: ${new Date().toISOString()}
 `
 }
 
-export async function executeTask(taskId: string): Promise<{ success: boolean; error?: string; method?: 'coordinator' | 'cli' }> {
+export async function executeTask(taskId: string): Promise<{ success: boolean; error?: string; method?: 'taskman' | 'cli' }> {
   const task = getTaskById(taskId)
   if (!task) {
     return { success: false, error: 'Task not found' }
@@ -336,28 +359,36 @@ export async function executeTask(taskId: string): Promise<{ success: boolean; e
   
   logSpawnEvent('TASK_EXECUTE', `Starting: ${taskId}`, { title: task.title })
   
-  const agentConfig = getAgentConfig(task.agentId)
+  const project = store.getProjectById(task.projectId)
+  
+  // Build context with taskman workspace
+  const taskManWorkspace = path.join(process.env.HOME || '', '.openclaw', 'workspace-taskman')
+  const fullContext = buildTaskContext(task, { 
+    id: TASKMAN_AGENT_ID,
+    name: 'TaskMan',
+    workspace: taskManWorkspace,
+    agentDir: path.join(process.env.HOME || '', '.openclaw', 'agents', 'taskman', 'agent')
+  }, project)
+  
+  // Try TaskMan first (sessions_spawn)
+  updateTaskStatus(taskId, 'processing', 'Contacting TaskMan...')
+  const taskManResult = await spawnViaTaskMan(task, fullContext)
+  
+  if (taskManResult.success) {
+    updateTaskStatus(taskId, 'processing', 'Worker spawned via TaskMan', {
+      assignedAgent: taskManResult.sessionKey
+    })
+    return { success: true, method: 'taskman' }
+  }
+  
+  // Fallback to CLI - use the original agent from task
+  console.log(`[TaskRunner] TaskMan failed: ${taskManResult.error}, falling back to CLI`)
+  
+  const agentConfig = getAgentConfig(task.agentId || 'coder')
   if (!agentConfig) {
     updateTaskStatus(taskId, 'failed', 'Agent not found')
     return { success: false, error: 'Agent not found' }
   }
-  
-  const project = store.getProjectById(task.projectId)
-  const fullContext = buildTaskContext(task, agentConfig, project)
-  
-  // Try Coordinator first (sessions_spawn)
-  updateTaskStatus(taskId, 'processing', 'Contacting Coordinator...')
-  const coordinatorResult = await spawnViaCoordinator(task, fullContext)
-  
-  if (coordinatorResult.success) {
-    updateTaskStatus(taskId, 'processing', 'Worker spawned via Coordinator', {
-      assignedAgent: coordinatorResult.sessionKey
-    })
-    return { success: true, method: 'coordinator' }
-  }
-  
-  // Fallback to CLI
-  console.log(`[TaskRunner] Coordinator failed: ${coordinatorResult.error}, falling back to CLI`)
   
   const cliResult = await spawnViaCli(task, agentConfig, fullContext)
   
