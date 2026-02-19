@@ -1,11 +1,12 @@
 /**
- * Task Runner - OpenClaw Core Native
- * Uses openclaw CLI for sub-agents with proper progress tracking
+ * Task Runner - OpenClaw Core with Coordinator Agent
+ * Uses Coordinator Agent + sessions_spawn for true sub-agent spawning
  */
 
-import { spawn } from 'child_process'
+import { spawn, exec } from 'child_process'
 import fs from 'fs'
 import path from 'path'
+import { promisify } from 'util'
 import { store } from './store'
 import { 
   updateTaskStatus, 
@@ -17,23 +18,26 @@ import {
 } from './memory'
 import { logSpawnEvent } from './spawnLogger'
 
+const execAsync = promisify(exec)
+
 // Default workspace
 const DEFAULT_WORKSPACE_PATH = path.join(process.env.HOME || '', '.openclaw', 'workspace-coder')
-
-interface AgentConfig {
-  id: string
-  name: string
-  model?: string
-  thinking?: string
-  workspace: string
-  agentDir: string
-}
 
 // =====================================================
 // PROGRESS TRACKING
 // =====================================================
 
 const PROGRESS_DIR = path.join(process.cwd(), 'data', 'task-contexts')
+
+export function readTaskProgressFile(taskId: string): { percentage: number; message: string; timestamp: number } | null {
+  try {
+    const progressFile = path.join(PROGRESS_DIR, `${taskId}.progress`)
+    if (!fs.existsSync(progressFile)) return null
+    return JSON.parse(fs.readFileSync(progressFile, 'utf-8'))
+  } catch (e) {
+    return null
+  }
+}
 
 function writeTaskProgressFile(taskId: string, percentage: number, message: string): void {
   try {
@@ -49,151 +53,112 @@ function writeTaskProgressFile(taskId: string, percentage: number, message: stri
   }
 }
 
-export function readTaskProgressFile(taskId: string): { percentage: number; message: string; timestamp: number } | null {
-  try {
-    const progressFile = path.join(PROGRESS_DIR, `${taskId}.progress`)
-    if (!fs.existsSync(progressFile)) return null
-    return JSON.parse(fs.readFileSync(progressFile, 'utf-8'))
-  } catch (e) {
-    return null
-  }
-}
-
 // =====================================================
-// AGENT CONFIGURATION
-// =====================================================
-
-function getAgentConfig(agentId: string): AgentConfig | null {
-  try {
-    const configPath = path.join(process.env.HOME || '', '.openclaw', 'openclaw.json')
-    if (!fs.existsSync(configPath)) return null
-    
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
-    const agent = config.agents?.list?.find((a: any) => a.id === agentId)
-    
-    if (!agent) return null
-    
-    return {
-      id: agent.id,
-      name: agent.name,
-      model: agent.model,
-      workspace: agent.workspace,
-      agentDir: agent.agentDir
-    }
-  } catch (error) {
-    console.error('Failed to get agent config:', error)
-    return null
-  }
-}
-
-// =====================================================
-// CONTEXT BUILDER
-// =====================================================
-
-function buildTaskContext(task: any, agentConfig: AgentConfig, project: any): string {
-  const projectPath = project?.path || path.join(DEFAULT_WORKSPACE_PATH, 'projects', task.projectId)
-  const contextDir = path.join(process.cwd(), 'data', 'task-contexts')
-  const progressHelperPath = path.join(contextDir, `${task.id}-progress.js`)
-  
-  // Read project memory
-  const projectMemory = readMemorySync(task.projectId)
-  const formattedMemory = formatMemoryForPrompt(projectMemory)
-  
-  let context = `## 🤖 Your Agent Identity
-- **ID:** ${agentConfig.id}
-- **Name:** ${agentConfig.name}
-- **Model:** ${agentConfig.model || 'default'}
-
-## 🛠️ YOUR TOOLS AND WORKSPACE
-
-### Available Tools
-You have access to these tools:
-- **write** - Create new files
-- **read** - Read file contents
-- **edit** - Modify existing files
-- **exec** - Execute shell commands
-
-### Workspace Location
-**Your current working directory is:** 
-\`\`\`
-${projectPath}
-\`\`\`
-
-### How to Use Tools
-
-#### Creating Files
-Use the write tool with the full path:
-\`\`\`
-write: {"file_path": "${projectPath}/filename.md", "content": "# Your content here"}
-\`\`\`
-
-## 📁 Project Context
-- **Project ID:** ${task.projectId}
-- **Project Path:** ${projectPath}
-
-## ✅ YOUR TASK
-
-${task.description || task.title}
-
-### Requirements
-1. **DO THE ACTUAL WORK** - Don't just say you'll do it
-2. **Create/modify files** using the write/edit tools
-3. **Work in the project directory:** ${projectPath}
-4. **Save all outputs** to files in that directory
-5. **Report completion** when done
-
-## 📊 PROGRESS TRACKING (CRITICAL - DO THIS!)
-
-⚠️ **YOU MUST REPORT PROGRESS FREQUENTLY** ⚠️
-
-Use this command to report progress:
-\`\`\`
-exec: {"command": "node ${progressHelperPath} 20 '📝 กำลังวิเคราะห์ requirements'"}
-\`\`\`
-
-Change the percentage (20, 40, 60, 80, 100) and message as you work:
-- **20%** - เริ่มต้น, วิเคราะห์ requirements
-- **40%** - สร้างไฟล์แรก, setup project  
-- **60%** - ทำงานหลัก, implement features
-- **80%** - แก้ไข, finalize, test
-- **100%** - เสร็จสมบูรณ์
-
-**REPORT PROGRESS AFTER EVERY SIGNIFICANT STEP!**
-
-## 📤 Task Completion
-
-When done, call complete API:
-\`\`\`
-exec: {"command": "curl -s -X POST http://localhost:3000/api/projects/${task.projectId}/tasks/${task.id}/complete -H 'Content-Type: application/json' -d '{"result": "สรุปงานที่ทำ: 1. สร้างไฟล์อะไรบ้าง 2. ทำอะไรไปบ้าง 3. ผลลัพธ์เป็นอย่างไร", "artifacts": ["filename.js"]}'"}
-\`\`\`
-
-## 📚 PROJECT MEMORY
-
-${formattedMemory || 'No previous memory recorded.'}
-
----
-*Task: ${task.id}*
-*Started: ${new Date().toISOString()}*
-`
-
-  return context
-}
-
-// =====================================================
-// SPAWN SUB-AGENT VIA CLI
+// SPAWN VIA COORDINATOR AGENT (sessions_spawn)
 // =====================================================
 
 /**
- * Spawn sub-agent using OpenClaw CLI
- * This uses the openclaw command directly
+ * Spawn worker via Coordinator Agent using sessions_spawn
+ * This uses the actual OpenClaw sessions_spawn tool
+ */
+async function spawnViaCoordinator(
+  task: any,
+  fullContext: string
+): Promise<{ success: boolean; sessionKey?: string; error?: string }> {
+  
+  logSpawnEvent('COORDINATOR_SPAWN', `Spawning via coordinator for task ${task.id}`, { agentId: task.agentId })
+  
+  try {
+    // Build coordinator message with [DASHBOARD] prefix
+    const coordinatorMessage = buildCoordinatorMessage(task, fullContext)
+    
+    // Write message to temp file (to avoid shell escaping issues)
+    const messageFile = path.join(PROGRESS_DIR, `${task.id}-message.txt`)
+    fs.mkdirSync(PROGRESS_DIR, { recursive: true })
+    fs.writeFileSync(messageFile, coordinatorMessage, 'utf-8')
+    
+    // Initial progress
+    writeTaskProgressFile(task.id, 15, '📡 Sending to Coordinator...')
+    
+    // Call openclaw agent coordinator
+    const { stdout, stderr } = await execAsync(
+      `openclaw agent --agent coordinator -m "$(cat ${messageFile})" --thinking medium`,
+      { timeout: 60000 } // 60 second timeout for coordinator response
+    )
+    
+    // Parse response
+    const response = stdout + stderr
+    logSpawnEvent('COORDINATOR_RESPONSE', 'Coordinator response', { response: response.substring(0, 500) })
+    
+    // Check if sessions_spawn was successful
+    if (response.includes('sessions_spawn') || response.includes('Worker agent spawned') || response.includes('subagent')) {
+      writeTaskProgressFile(task.id, 20, '🚀 Worker spawned via sessions_spawn')
+      
+      // Extract session key if available
+      const sessionMatch = response.match(/subagent:([a-f0-9-]+)/)
+      const sessionKey = sessionMatch ? `agent:coordinator:subagent:${sessionMatch[1]}` : undefined
+      
+      return {
+        success: true,
+        sessionKey
+      }
+    }
+    
+    // If coordinator couldn't spawn, return the response for debugging
+    return {
+      success: false,
+      error: `Coordinator response: ${response.substring(0, 200)}`
+    }
+    
+  } catch (error: any) {
+    logSpawnEvent('COORDINATOR_SPAWN', `Failed to spawn via coordinator`, undefined, undefined, error.message)
+    
+    // If timeout or error, fallback to CLI
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      return {
+        success: false,
+        error: 'Coordinator timeout, will fallback to CLI'
+      }
+    }
+    
+    return {
+      success: false,
+      error: error.message
+    }
+  }
+}
+
+/**
+ * Build message for Coordinator Agent
+ */
+function buildCoordinatorMessage(task: any, context: string): string {
+  return `[DASHBOARD] Task Request
+ID: ${task.id}
+Project: ${task.projectId}
+Title: ${task.title}
+Description: ${task.description || task.title}
+Agent: ${task.agentId}
+
+Please use sessions_spawn to create a worker agent for this task.
+
+Task Context:
+${context.substring(0, 1000)}`
+}
+
+// =====================================================
+// FALLBACK: CLI SPAWN
+// =====================================================
+
+/**
+ * Fallback: Spawn agent directly via CLI
  */
 async function spawnViaCli(
   task: any,
-  agentConfig: AgentConfig,
+  agentConfig: any,
   fullContext: string
 ): Promise<{ success: boolean; pid?: number; error?: string }> {
   
-  logSpawnEvent('CLI_SPAWN', `Spawning sub-agent for task ${task.id}`, { agentId: agentConfig.id })
+  logSpawnEvent('CLI_SPAWN', `Direct CLI spawn for task ${task.id}`, { agentId: agentConfig.id })
   
   try {
     // Write context to file
@@ -229,19 +194,14 @@ function writeProgress(pct, msg) {
 }
 
 const [,, pct, msg] = process.argv;
-if (pct && msg) {
-  writeProgress(pct, msg);
-} else {
-  console.log('Usage: node progress.js <percentage> <message>');
-}
+writeProgress(pct, msg);
 `
     fs.writeFileSync(progressHelperPath, progressHelperScript)
     fs.chmodSync(progressHelperPath, 0o755)
     
-    // Write initial progress
-    writeTaskProgressFile(task.id, 10, '🚀 Sub-agent starting...')
+    writeTaskProgressFile(task.id, 10, '🚀 Spawning via CLI...')
     
-    // Create background script
+    // Create worker script
     const agentScriptPath = path.join(contextDir, `${task.id}-agent.sh`)
     const logFile = path.join(contextDir, `${task.id}.log`)
     const pidFile = path.join(contextDir, `${task.id}.pid`)
@@ -249,46 +209,29 @@ if (pct && msg) {
     const agentScript = `#!/bin/bash
 set -e
 
-TASK_ID="${task.id}"
-LOG_FILE="${logFile}"
-PID_FILE="${pidFile}"
-PROMPT_FILE="${promptFile}"
-PROGRESS_HELPER="${progressHelperPath}"
+echo $$ > "${pidFile}"
+echo "=== Task ${task.id} Started ===" > "$LOG_FILE"
+echo "Time: $(date)" >> "$LOG_FILE"
 
-# Report progress helper
 report_progress() {
-  node "$PROGRESS_HELPER" "$1" "$2" 2>/dev/null || true
+  node "${progressHelperPath}" "$1" "$2" 2>/dev/null || true
 }
 
-# Write PID
-echo $$ > "$PID_FILE"
+report_progress 15 "📖 Reading task..."
 
-# Log start
-echo "=== Task $TASK_ID Started ===" > "$LOG_FILE"
-echo "PID: $$" >> "$LOG_FILE"
-echo "Time: $(date)" >> "$LOG_FILE"
-echo "" >> "$LOG_FILE"
-
-report_progress 15 "📖 Reading task context..."
-
-# Run openclaw agent with the prompt
-openclaw agent \
-  --agent ${agentConfig.id} \
-  --message "$(cat "$PROMPT_FILE")" \
-  --thinking ${agentConfig.thinking || 'medium'} \
-  --json 2>&1 | tee -a "$LOG_FILE" || {
-    echo "Agent exited with code $?" >> "$LOG_FILE"
-    exit 1
-  }
+openclaw agent \\
+  --agent ${agentConfig.id} \\
+  --message "$(cat "${promptFile}")" \\
+  --thinking ${agentConfig.thinking || 'medium'} \\
+  --json 2>&1 | tee -a "${logFile}" || true
 
 report_progress 100 "✅ Task completed"
-echo "=== Task Completed ===" >> "$LOG_FILE"
 `
     
     fs.writeFileSync(agentScriptPath, agentScript)
     fs.chmodSync(agentScriptPath, 0o755)
     
-    // Spawn the agent in background
+    // Spawn in background
     const child = spawn('bash', [agentScriptPath], {
       detached: true,
       stdio: 'ignore'
@@ -296,9 +239,8 @@ echo "=== Task Completed ===" >> "$LOG_FILE"
     
     child.unref()
     
-    logSpawnEvent('CLI_SPAWN', `Sub-agent spawned with PID ${child.pid}`, { pid: child.pid })
+    logSpawnEvent('CLI_SPAWN', `Spawned with PID ${child.pid}`, { pid: child.pid })
     
-    // Store info
     store.set(`subagent:${task.id}`, {
       pid: child.pid,
       agentId: agentConfig.id,
@@ -308,22 +250,11 @@ echo "=== Task Completed ===" >> "$LOG_FILE"
       pidFile
     })
     
-    // Update task status
-    updateTaskStatus(task.id, 'processing', 'Sub-agent spawned and processing', {
-      assignedAgent: `${agentConfig.id}:${child.pid}`
-    })
-    
-    return {
-      success: true,
-      pid: child.pid
-    }
+    return { success: true, pid: child.pid }
     
   } catch (error: any) {
-    logSpawnEvent('CLI_SPAWN', `Failed to spawn sub-agent`, undefined, undefined, error.message)
-    return {
-      success: false,
-      error: error.message
-    }
+    logSpawnEvent('CLI_SPAWN', `Failed`, undefined, undefined, error.message)
+    return { success: false, error: error.message }
   }
 }
 
@@ -331,191 +262,121 @@ echo "=== Task Completed ===" >> "$LOG_FILE"
 // TASK EXECUTION
 // =====================================================
 
-/**
- * Execute a task
- */
-export async function executeTask(taskId: string): Promise<{ success: boolean; error?: string }> {
+interface AgentConfig {
+  id: string
+  name: string
+  model?: string
+  thinking?: string
+  workspace: string
+  agentDir: string
+}
+
+function getAgentConfig(agentId: string): AgentConfig | null {
+  try {
+    const configPath = path.join(process.env.HOME || '', '.openclaw', 'openclaw.json')
+    if (!fs.existsSync(configPath)) return null
+    
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+    const agent = config.agents?.list?.find((a: any) => a.id === agentId)
+    
+    if (!agent) return null
+    
+    return {
+      id: agent.id,
+      name: agent.name,
+      model: agent.model,
+      workspace: agent.workspace,
+      agentDir: agent.agentDir
+    }
+  } catch (error) {
+    console.error('Failed to get agent config:', error)
+    return null
+  }
+}
+
+function buildTaskContext(task: any, agentConfig: AgentConfig, project: any): string {
+  const projectPath = project?.path || path.join(DEFAULT_WORKSPACE_PATH, 'projects', task.projectId)
+  const projectMemory = readMemorySync(task.projectId)
+  const formattedMemory = formatMemoryForPrompt(projectMemory)
+  
+  return `## Task: ${task.title}
+
+### Instructions
+${task.description || 'Complete this task'}
+
+### Workspace
+${projectPath}
+
+### Tools
+- write - Create files
+- read - Read files
+- edit - Edit files
+- exec - Execute commands
+
+### Progress
+Report progress at 20%, 40%, 60%, 80%, 100%
+
+### Completion
+When done, call complete API with result and artifacts.
+
+### Memory
+${formattedMemory || 'No previous memory'}
+
+---
+Task: ${task.id}
+Started: ${new Date().toISOString()}
+`
+}
+
+export async function executeTask(taskId: string): Promise<{ success: boolean; error?: string; method?: 'coordinator' | 'cli' }> {
   const task = getTaskById(taskId)
   if (!task) {
     return { success: false, error: 'Task not found' }
   }
   
-  logSpawnEvent('TASK_EXECUTE', `Starting task execution: ${taskId}`, { title: task.title })
+  logSpawnEvent('TASK_EXECUTE', `Starting: ${taskId}`, { title: task.title })
   
-  // Get agent config
   const agentConfig = getAgentConfig(task.agentId)
   if (!agentConfig) {
-    updateTaskStatus(taskId, 'failed', 'Agent configuration not found', {
-      error: `Agent ${task.agentId} not found in config`
-    })
+    updateTaskStatus(taskId, 'failed', 'Agent not found')
     return { success: false, error: 'Agent not found' }
   }
   
-  // Get project info
   const project = store.getProjectById(task.projectId)
-  
-  // Build context
   const fullContext = buildTaskContext(task, agentConfig, project)
   
-  // Check if daemon is available
-  const daemonAvailable = await isDaemonRunning()
+  // Try Coordinator first (sessions_spawn)
+  updateTaskStatus(taskId, 'processing', 'Contacting Coordinator...')
+  const coordinatorResult = await spawnViaCoordinator(task, fullContext)
   
-  if (daemonAvailable) {
-    // Send task to daemon
-    const sent = await sendTaskToDaemon(task)
-    if (sent) {
-      updateTaskStatus(taskId, 'pending', 'Queued in daemon')
-      return { success: true }
-    }
-  }
-  
-  // Fallback: Spawn agent directly via CLI
-  const spawnResult = await spawnViaCli(task, agentConfig, fullContext)
-  if (!spawnResult.success) {
-    updateTaskStatus(taskId, 'failed', 'Failed to spawn sub-agent', {
-      error: spawnResult.error
+  if (coordinatorResult.success) {
+    updateTaskStatus(taskId, 'processing', 'Worker spawned via Coordinator', {
+      assignedAgent: coordinatorResult.sessionKey
     })
-    return { success: false, error: spawnResult.error }
+    return { success: true, method: 'coordinator' }
   }
   
-  return { success: true }
-}
-
-// =====================================================
-// DAEMON INTEGRATION
-// =====================================================
-
-const DAEMON_STATE_FILE = path.join(process.cwd(), 'data', 'daemon-state.json')
-const DAEMON_MESSAGES_FILE = path.join(process.cwd(), 'data', 'daemon-messages.json')
-
-/**
- * Check if daemon is running
- */
-async function isDaemonRunning(): Promise<boolean> {
-  try {
-    if (!fs.existsSync(DAEMON_STATE_FILE)) {
-      return false
-    }
-    
-    const state = JSON.parse(fs.readFileSync(DAEMON_STATE_FILE, 'utf-8'))
-    
-    // Check if daemon was active recently (within 30 seconds)
-    if (state.lastActive) {
-      const lastActive = new Date(state.lastActive).getTime()
-      const now = Date.now()
-      const diffSeconds = (now - lastActive) / 1000
-      
-      return diffSeconds < 30
-    }
-    
-    return false
-  } catch (e) {
-    return false
+  // Fallback to CLI
+  console.log(`[TaskRunner] Coordinator failed: ${coordinatorResult.error}, falling back to CLI`)
+  
+  const cliResult = await spawnViaCli(task, agentConfig, fullContext)
+  
+  if (cliResult.success) {
+    updateTaskStatus(taskId, 'processing', 'Worker spawned via CLI', {
+      assignedAgent: `${agentConfig.id}:${cliResult.pid}`
+    })
+    return { success: true, method: 'cli' }
   }
+  
+  updateTaskStatus(taskId, 'failed', 'Failed to spawn worker', {
+    error: cliResult.error
+  })
+  
+  return { success: false, error: cliResult.error }
 }
 
-/**
- * Send task to daemon
- */
-async function sendTaskToDaemon(task: any): Promise<boolean> {
-  try {
-    const message = {
-      type: 'spawn_task',
-      task: {
-        id: task.id,
-        projectId: task.projectId,
-        title: task.title,
-        description: task.description || task.title,
-        agentId: task.agentId
-      }
-    }
-    
-    // Append to daemon messages file
-    let messages: any[] = []
-    if (fs.existsSync(DAEMON_MESSAGES_FILE)) {
-      messages = JSON.parse(fs.readFileSync(DAEMON_MESSAGES_FILE, 'utf-8'))
-    }
-    messages.push(message)
-    fs.writeFileSync(DAEMON_MESSAGES_FILE, JSON.stringify(messages, null, 2))
-    
-    console.log(`[TaskRunner] Task ${task.id} sent to daemon`)
-    return true
-  } catch (e) {
-    console.error('[TaskRunner] Failed to send task to daemon:', e)
-    return false
-  }
-}
-
-// =====================================================
-// SPAWN FOR TASK - Main entry point
-// =====================================================
-
+// Entry point for task queue
 export async function spawnForTask(taskId: string): Promise<{ success: boolean; error?: string }> {
-  return executeTask(taskId)
-}
-
-// =====================================================
-// CHECK STATUS
-// =====================================================
-
-export async function checkSubAgentStatus(taskId: string): Promise<{
-  status: 'running' | 'completed' | 'failed' | 'unknown'
-  result?: string
-  error?: string
-}> {
-  const subagentInfo = store.get(`subagent:${taskId}`) as any
-  
-  if (!subagentInfo) {
-    return { status: 'unknown' }
-  }
-  
-  try {
-    // Check if process is still running
-    process.kill(subagentInfo.pid, 0)
-    
-    // Check progress file
-    const progress = readTaskProgressFile(taskId)
-    if (progress?.percentage === 100) {
-      return { status: 'completed', result: progress.message }
-    }
-    
-    return { status: 'running' }
-  } catch (e) {
-    // Process is dead, check if completed successfully
-    const progress = readTaskProgressFile(taskId)
-    if (progress?.percentage === 100 || progress?.message?.includes('completed')) {
-      return { status: 'completed', result: progress.message }
-    }
-    return { status: 'failed', error: 'Process terminated' }
-  }
-}
-
-// =====================================================
-// CANCEL TASK
-// =====================================================
-
-export async function cancelTask(taskId: string): Promise<boolean> {
-  const subagentInfo = store.get(`subagent:${taskId}`) as any
-  
-  if (!subagentInfo?.pid) {
-    return false
-  }
-  
-  try {
-    process.kill(subagentInfo.pid, 'SIGTERM')
-    updateTaskStatus(taskId, 'cancelled', 'Task cancelled by user')
-    return true
-  } catch (error) {
-    return false
-  }
-}
-
-// =====================================================
-// EXPORTS
-// =====================================================
-
-export {
-  getAgentConfig,
-  buildTaskContext,
-  writeTaskProgressFile
+  const result = await executeTask(taskId)
+  return { success: result.success, error: result.error }
 }

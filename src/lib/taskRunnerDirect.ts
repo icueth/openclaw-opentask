@@ -1,12 +1,11 @@
 /**
  * Task Runner Direct - OpenClaw Core Native
- * Direct execution using sessions_spawn
+ * Direct execution using Coordinator Agent + sessions_spawn
  */
 
-import { executeTask, checkSubAgentStatus, cancelTask } from './taskRunner'
+import { executeTask, spawnForTask } from './taskRunner'
 
 export {
   executeTask,
-  checkSubAgentStatus,
-  cancelTask
+  spawnForTask
 }
