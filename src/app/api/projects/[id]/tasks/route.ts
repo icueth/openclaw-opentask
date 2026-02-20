@@ -118,7 +118,9 @@ export async function POST(
     const task = await createTask(projectId, {
       title: body.title,
       description: body.description || '',
-      priority: body.priority || 'medium'
+      priority: body.priority || 'medium',
+      agentCount: body.agentCount || 1,
+      agentThinkingLevels: body.agentThinkingLevels || [3]
     })
     console.log(`[POST /api/projects/${projectId}/tasks] Task created: ${task.id}, status: ${task.status}`)
     

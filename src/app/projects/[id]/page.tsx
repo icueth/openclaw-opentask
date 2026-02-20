@@ -340,14 +340,6 @@ export default function ProjectDetailPage() {
             >
               <Trash2 className="w-4 h-4" />
             </button>
-            <Link href={`/projects/${projectId}/pipeline-tasks/new`}>
-              <NeonButton
-                variant="purple"
-                icon={<GitBranch className="w-4 h-4" />}
-              >
-                Pipeline
-              </NeonButton>
-            </Link>
             <NeonButton
               variant="cyan"
               onClick={() => setShowTaskForm(true)}

@@ -25,6 +25,8 @@ export interface Task {
   progress?: number              // 0-100 progress percentage
   progressUpdates?: ProgressUpdate[]  // History of progress updates
   currentStep?: string           // Current step description
+  agentCount?: number            // Number of agents spawned for this task
+  agentThinkingLevels?: number[] // Thinking level for each agent
 }
 
 export interface StatusChange {
@@ -47,6 +49,8 @@ export interface CreateTaskRequest {
   maxRetries?: number
   timeoutMinutes?: number
   autoStart?: boolean
+  agentCount?: number   // Number of agents to spawn (1-5, default 1)
+  agentThinkingLevels?: number[] // Thinking level for each agent (1-5)
 }
 
 export interface UpdateTaskRequest {

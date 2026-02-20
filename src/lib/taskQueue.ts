@@ -28,12 +28,14 @@ export interface Task {
   retryCount?: number
   maxRetries?: number
   timeoutMinutes?: number
+  agentCount?: number
+  agentThinkingLevels?: number[]
 }
 
 /**
  * Create new task and trigger execution immediately
  */
-export async function createTask(projectId: string, data: { title: string; description?: string; priority?: string }): Promise<Task> {
+export async function createTask(projectId: string, data: { title: string; description?: string; priority?: string; agentCount?: number; agentThinkingLevels?: number[] }): Promise<Task> {
   const task: Task = {
     id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     projectId,
@@ -41,25 +43,30 @@ export async function createTask(projectId: string, data: { title: string; descr
     description: data.description,
     status: 'pending',
     priority: (data.priority as any) || 'medium',
+    agentCount: data.agentCount || 1,
+    agentThinkingLevels: data.agentThinkingLevels || [3],
     createdAt: new Date().toISOString()
   }
-  
+
   // Save to store
   const tasks = store.getTasks()
   tasks.push(task)
   store.writeTasks(tasks)
-  
+
   // Execute immediately (no queue)
   task.status = 'processing'
   task.startedAt = new Date().toISOString()
   updateTaskStatus(task.id, 'processing', 'Starting task...')
-  
-  // Trigger execution in background
-  executeTask(task.id, projectId, task.title, task.description || '').catch(err => {
+
+  // Trigger execution in background with agent configuration
+  executeTask(task.id, projectId, task.title, task.description || '', {
+    agentCount: task.agentCount,
+    agentThinkingLevels: task.agentThinkingLevels
+  }).catch(err => {
     console.error(`[TaskQueue] Execution error:`, err)
     updateTaskStatus(task.id, 'failed', err.message)
   })
-  
+
   return task
 }
 
@@ -83,7 +90,8 @@ export function updateTaskStatus(
     currentStep: message,
     ...(status === 'completed' && { completedAt: new Date().toISOString() }),
     ...(metadata?.artifacts && { assignedAgent: metadata.artifacts.join(', ') }),
-    ...(metadata?.error && { error: metadata.error })
+    ...(metadata?.error && { error: metadata.error }),
+    ...(metadata?.result && { result: metadata.result })
   }
   
   store.writeTasks(tasks)

@@ -9,6 +9,7 @@ import { Task } from '@/types/task'
 import TaskStatusBadge, { TaskPriorityBadge } from '@/components/TaskStatusBadge'
 import TaskResultViewer from '@/components/TaskResultViewer'
 import TaskProgress from '@/components/TaskProgress'
+import TaskLogViewer from '@/components/TaskLogViewer'
 import GlassCard from '@/components/GlassCard'
 import NeonButton from '@/components/NeonButton'
 import { useProgressPolling } from '@/hooks/useProgressPolling'
@@ -18,10 +19,16 @@ import {
   CheckCircle, XOctagon, Activity, ChevronDown, GitBranch, FileCode, Rocket,
   BookOpen
 } from 'lucide-react'
-// Git push functionality removed in simplified version
-const shouldShowGitPushButton = (_task?: Task) => false
-const getArtifactFileList = (_task?: Task) => []
-import WorkerPoolButton from '@/components/WorkerPoolButton'
+// Git push functionality - show for completed tasks with artifacts
+const shouldShowGitPushButton = (task?: Task) => {
+  if (!task) return false
+  return (task.status === 'completed' || task.status === 'failed') && 
+         task.artifacts && task.artifacts.length > 0
+}
+const getArtifactFileList = (task?: Task) => {
+  if (!task?.artifacts) return []
+  return task.artifacts
+}
 import Link from 'next/link'
 
 export default function TaskDetailPage() {
@@ -321,17 +328,6 @@ export default function TaskDetailPage() {
 
             {/* Right - Actions */}
             <div className="flex items-center gap-2">
-              {/* Worker Pool - Show for active/processing tasks */}
-              {(task.status === 'active' || task.status === 'processing' || task.status === 'pending') && (
-                <WorkerPoolButton
-                  taskId={taskId}
-                  projectId={projectId}
-                  onPoolCreated={(data) => {
-                    alert(`Created ${data.workers.length} workers! Check SHARED_CONTEXT.md for progress.`)
-                    fetchTask()
-                  }}
-                />
-              )}
               {canStart && (
                 <NeonButton
                   size="sm"
@@ -508,25 +504,12 @@ export default function TaskDetailPage() {
               </div>
             </GlassCard>
 
-            {/* Progress Card */}
-            {(task.status === 'processing' || task.status === 'active' || task.progress !== undefined) && (
-              <GlassCard className="p-6">
-                <h3 className="text-lg font-medium text-gray-200 mb-4 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-neon-cyan" />
-                  Execution Progress
-                </h3>
-                <TaskProgress
-                  progress={task.status === 'completed' || task.status === 'failed' 
-                    ? (task.progressUpdates && task.progressUpdates.length > 0 ? task.progressUpdates[task.progressUpdates.length - 1].percentage : task.progress ?? 0)
-                    : (polledProgress?.percentage ?? task.progress ?? (task.progressUpdates && task.progressUpdates.length > 0 ? task.progressUpdates[task.progressUpdates.length - 1].percentage : 0))}
-                  currentStep={task.status === 'completed' || task.status === 'failed'
-                    ? (task.progressUpdates && task.progressUpdates.length > 0 ? task.progressUpdates[task.progressUpdates.length - 1].message : task.currentStep ?? '')
-                    : (polledProgress?.message ?? task.currentStep ?? (task.progressUpdates && task.progressUpdates.length > 0 ? task.progressUpdates[task.progressUpdates.length - 1].message : ''))}
-                  progressUpdates={task.progressUpdates}
-                  status={task.status}
-                />
-              </GlassCard>
-            )}
+            {/* Live Logs - Real-time streaming (always show) */}
+            <TaskLogViewer 
+              projectId={projectId}
+              taskId={taskId}
+              status={task.status}
+            />
 
             {/* Description */}
             {task.description && (
@@ -616,24 +599,36 @@ export default function TaskDetailPage() {
                 <User className="w-4 h-4 text-neon-cyan" />
                 Assigned Agent
               </h3>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1.5 bg-neon-cyan/10 text-neon-cyan rounded-lg text-sm font-medium">
-                  {task.agentId}
-                </span>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1.5 bg-neon-cyan/10 text-neon-cyan rounded-lg text-sm font-medium">
+                    {task.agentId || 'Default Agent'}
+                  </span>
+                </div>
+                {task.assignedAgent && (
+                  <div className="p-3 bg-space-800/50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Session Key:</p>
+                    <code className="text-xs text-neon-cyan break-all">
+                      {task.assignedAgent}
+                    </code>
+                  </div>
+                )}
+                <div className="text-xs text-gray-500 space-y-1">
+                  <div className="flex justify-between">
+                    <span>Status:</span>
+                    <span className={task.status === 'processing' ? 'text-neon-cyan' : 'text-gray-300'}>
+                      {task.status === 'processing' ? 'Active' : 'Idle'}
+                    </span>
+                  </div>
+                  {task.startedAt && (
+                    <div className="flex justify-between">
+                      <span>Started:</span>
+                      <span>{new Date(task.startedAt).toLocaleTimeString()}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </GlassCard>
-
-            {/* Agent Info */}
-            {task.assignedAgent && (
-              <GlassCard className="p-4">
-                <h3 className="text-sm font-medium text-gray-400 mb-3">Processing Agent</h3>
-                <div className="p-3 bg-space-800/50 rounded-lg">
-                  <code className="text-xs text-neon-cyan break-all">
-                    {task.assignedAgent}
-                  </code>
-                </div>
-              </GlassCard>
-            )}
 
             {/* Retry Info */}
             {(task.retryCount !== undefined || task.maxRetries !== undefined) && (

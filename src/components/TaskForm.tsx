@@ -5,7 +5,7 @@ import { CreateTaskRequest, TaskPriority } from '@/types/task'
 import NeonButton from './NeonButton'
 import GlassCard from './GlassCard'
 import { 
-  AlertCircle, Loader2, Sparkles, FileText, Flag, Bot
+  AlertCircle, Loader2, Sparkles, FileText, Flag, Bot, Users, Brain
 } from 'lucide-react'
 
 interface Agent {
@@ -27,30 +27,40 @@ interface TaskFormProps {
 }
 
 const priorities: { value: TaskPriority; label: string; color: string; description: string }[] = [
-  { 
-    value: 'low', 
-    label: 'Low', 
+  {
+    value: 'low',
+    label: 'Low',
     color: 'text-gray-400 border-gray-500/30 hover:border-gray-500/50',
     description: 'Can be done when convenient'
   },
-  { 
-    value: 'medium', 
-    label: 'Medium', 
+  {
+    value: 'medium',
+    label: 'Medium',
     color: 'text-neon-blue border-neon-blue/30 hover:border-neon-blue/50',
     description: 'Standard priority task'
   },
-  { 
-    value: 'high', 
-    label: 'High', 
+  {
+    value: 'high',
+    label: 'High',
     color: 'text-orange-400 border-orange-500/30 hover:border-orange-500/50',
     description: 'Important, should be done soon'
   },
-  { 
-    value: 'urgent', 
-    label: 'Urgent', 
+  {
+    value: 'urgent',
+    label: 'Urgent',
     color: 'text-neon-red border-neon-red/30 hover:border-neon-red/50 shadow-[0_0_10px_rgba(255,51,51,0.2)]',
     description: 'Critical priority, immediate attention'
   },
+]
+
+const agentCountOptions = [1, 2, 3, 4, 5]
+
+const thinkingLevels = [
+  { value: 1, label: '1 - Quick', desc: 'Fast responses, basic reasoning' },
+  { value: 2, label: '2 - Light', desc: 'Standard reasoning' },
+  { value: 3, label: '3 - Medium', desc: 'Balanced depth and speed' },
+  { value: 4, label: '4 - Deep', desc: 'Thorough analysis' },
+  { value: 5, label: '5 - Maximum', desc: 'Deep reasoning, detailed analysis' },
 ]
 
 export default function TaskForm({
@@ -69,6 +79,38 @@ export default function TaskForm({
   const [validationError, setValidationError] = useState<string | null>(null)
   const [autoStart, setAutoStart] = useState(initialData?.autoStart !== false)
 
+  // Multi-agent settings
+  const [agentCount, setAgentCount] = useState(initialData?.agentCount || 1)
+  const [agentThinkingLevels, setAgentThinkingLevels] = useState<number[]>(
+    initialData?.agentThinkingLevels || [3]
+  )
+
+  // Update thinking levels array when agent count changes
+  const handleAgentCountChange = (count: number) => {
+    setAgentCount(count)
+    setAgentThinkingLevels(prev => {
+      const newLevels = [...prev]
+      if (count > prev.length) {
+        // Add more agents with default level 3
+        while (newLevels.length < count) {
+          newLevels.push(3)
+        }
+      } else if (count < prev.length) {
+        // Remove excess agents
+        return newLevels.slice(0, count)
+      }
+      return newLevels
+    })
+  }
+
+  const handleThinkingLevelChange = (index: number, level: number) => {
+    setAgentThinkingLevels(prev => {
+      const newLevels = [...prev]
+      newLevels[index] = level
+      return newLevels
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setValidationError(null)
@@ -83,7 +125,9 @@ export default function TaskForm({
       description: description.trim() || undefined,
       priority,
       // agentId is inherited from project if not specified
-      autoStart
+      autoStart,
+      agentCount,
+      agentThinkingLevels
     })
   }
 
@@ -164,6 +208,108 @@ export default function TaskForm({
         <p className="text-xs text-gray-500">
           Task will be executed by the project&apos;s assigned agent. The agent will spawn a sub-agent to handle the task.
         </p>
+      </div>
+
+      {/* Multi-Agent Configuration */}
+      <div className="space-y-4">
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
+          <Users className="w-4 h-4 text-neon-orange" />
+          Multi-Agent Configuration
+        </label>
+
+        {/* Agent Count */}
+        <div className="space-y-2">
+          <label className="text-sm text-gray-400">
+            Number of Agents (1-5)
+          </label>
+          <div className="flex gap-2">
+            {agentCountOptions.map((count) => (
+              <button
+                key={count}
+                type="button"
+                onClick={() => handleAgentCountChange(count)}
+                disabled={loading}
+                className={`
+                  w-10 h-10 rounded-lg font-semibold transition-all
+                  ${agentCount === count
+                    ? 'bg-neon-orange text-white ring-2 ring-neon-orange ring-offset-2 ring-offset-space-black'
+                    : 'bg-space-800 text-gray-400 hover:bg-space-700'
+                  }
+                  disabled:opacity-50
+                `}
+              >
+                {count}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500">
+            {agentCount === 1
+              ? 'Single agent will handle the task'
+              : `${agentCount} agents will collaborate on this task. TaskMan will coordinate and assign specific roles to each agent.`}
+          </p>
+        </div>
+
+        {/* Thinking Levels */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm text-gray-400">
+            <Brain className="w-4 h-4" />
+            Thinking Level for Each Agent
+          </label>
+          <div className="space-y-3">
+            {Array.from({ length: agentCount }, (_, i) => (
+              <div key={i} className="p-3 rounded-lg border border-space-600/30 bg-space-800/30">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-300">
+                    Agent {i + 1}
+                  </span>
+                  <span className="text-xs text-neon-orange">
+                    Level {agentThinkingLevels[i] || 3}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={1}
+                  max={5}
+                  value={agentThinkingLevels[i] || 3}
+                  onChange={(e) => handleThinkingLevelChange(i, parseInt(e.target.value))}
+                  disabled={loading}
+                  className="w-full accent-neon-orange"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  {thinkingLevels.map((level) => (
+                    <span
+                      key={level.value}
+                      className={agentThinkingLevels[i] === level.value ? 'text-neon-orange font-medium' : ''}
+                    >
+                      {level.value}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {thinkingLevels[(agentThinkingLevels[i] || 3) - 1]?.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Multi-agent Info */}
+        <GlassCard variant="default" className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-neon-orange/10 rounded-lg flex-shrink-0">
+              <Users className="w-4 h-4 text-neon-orange" />
+            </div>
+            <div className="text-sm text-gray-400">
+              <p className="font-medium text-gray-300 mb-1">How Multi-Agent Works</p>
+              <ul className="space-y-1 text-xs">
+                <li>• TaskMan analyzes the task and splits it among agents</li>
+                <li>• Each agent gets a specific role based on the task</li>
+                <li>• Agents work in parallel and report to TaskMan</li>
+                <li>• TaskMan coordinates and merges results</li>
+              </ul>
+            </div>
+          </div>
+        </GlassCard>
       </div>
 
       {/* Priority */}

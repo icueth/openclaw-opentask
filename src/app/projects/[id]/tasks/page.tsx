@@ -10,6 +10,7 @@ import {
   ArrowLeft, Plus, RefreshCw, LayoutGrid 
 } from 'lucide-react'
 import Link from 'next/link'
+import PullGitButton from '@/components/PullGitButton'
 
 export default function TasksPage() {
   const params = useParams()
@@ -19,6 +20,7 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [projectName, setProjectName] = useState<string>(projectId)
+  const [project, setProject] = useState<any>(null)
 
   // Fetch tasks
   const fetchTasks = useCallback(async () => {
@@ -45,8 +47,11 @@ export default function TasksPage() {
         const res = await fetch(`/api/projects/${projectId}`)
         if (res.ok) {
           const data = await res.json()
-          if (data.project?.name) {
-            setProjectName(data.project.name)
+          if (data.project) {
+            setProject(data.project)
+            if (data.project.name) {
+              setProjectName(data.project.name)
+            }
           }
         }
       } catch (err) {
@@ -148,6 +153,11 @@ export default function TasksPage() {
 
             {/* Right */}
             <div className="flex items-center gap-3">
+              <PullGitButton
+                projectId={projectId}
+                githubUrl={project?.githubUrl}
+                onPullCreated={fetchTasks}
+              />
               <Link href={`/projects/${projectId}/tasks/new`}>
                 <NeonButton size="sm" icon={<Plus className="w-4 h-4" />}>
                   New Task

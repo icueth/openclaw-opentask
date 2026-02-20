@@ -125,11 +125,39 @@ export default function TaskResultViewer({ task }: TaskResultViewerProps) {
                 {task.error || 'Unknown error occurred'}
               </div>
             ) : task.result ? (
-              <div className="font-mono text-sm text-gray-300 whitespace-pre-wrap">
-                {task.result}
+              <div className="space-y-4">
+                <div className="font-mono text-sm text-gray-300 whitespace-pre-wrap">
+                  {task.result}
+                </div>
+                {task.artifacts && task.artifacts.length > 0 && (
+                  <div className="border-t border-space-600/30 pt-4 mt-4">
+                    <p className="text-sm text-gray-400 mb-2">📁 Created Files:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {task.artifacts.map((artifact, i) => (
+                        <code key={i} className="text-xs bg-neon-green/10 text-neon-green px-2 py-1 rounded">
+                          {artifact.split('/').pop()}
+                        </code>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
-              <p className="text-gray-500 italic">No result data available</p>
+              <div className="space-y-2">
+                <p className="text-gray-300">✅ Task completed successfully</p>
+                {task.artifacts && task.artifacts.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-400 mb-2">📁 Created Files:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {task.artifacts.map((artifact, i) => (
+                        <code key={i} className="text-xs bg-neon-green/10 text-neon-green px-2 py-1 rounded">
+                          {artifact.split('/').pop()}
+                        </code>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
@@ -200,7 +228,7 @@ export default function TaskResultViewer({ task }: TaskResultViewerProps) {
         <GlassCard className="p-4">
           <h3 className="text-sm font-medium text-gray-300 mb-4">Status History</h3>
           <div className="space-y-3">
-            {task.statusHistory.map((entry, index) => (
+            {(task.statusHistory || []).map((entry, index) => (
               <div
                 key={index}
                 className="flex items-start gap-3 p-3 rounded-lg bg-space-800/30"
