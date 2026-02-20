@@ -1,41 +1,38 @@
-# OpenClaw Dashboard
+# OpenClaw Dashboard (OpenTask)
 
-A comprehensive, futuristic dashboard for monitoring and managing your OpenClaw instance. Built with Next.js, TypeScript, and Tailwind CSS.
-
-![Dashboard](https://via.placeholder.com/800x400/0a0a0f/3b82f6?text=OpenClaw+Dashboard)
+A clean, focused dashboard for managing OpenClaw agents and tasks. Built with Next.js 14, TypeScript, and Tailwind CSS.
 
 ## ✨ Features
 
-### 🖥️ System Monitoring
-- **Real-time Gateway Status** - Monitor gateway health, uptime, and performance
-- **Live Session Tracking** - View all active sessions across channels
-- **Node Management** - See connected nodes and their status
-- **Live Log Viewer** - Real-time log streaming with filters and search
+### 🗂️ Project Management
+- **Create Projects** with isolated workspaces in `data/projects/`
+- **GitHub Integration** - Clone repositories directly when creating projects
+- **Project Memory** - Each project has MEMORY.md for persistent context
+- **Project Documentation** - Auto-generated PROJECT.md templates
+
+### 📋 Task Management
+- **Create Tasks** with title, description, and priority
+- **Auto-Execution** via TaskMan agent - tasks start automatically
+- **Multi-Agent Tasks** - Select 1-5 agents with thinking levels 1-5
+- **Real-time Status** - Track task progress from pending → processing → completed
+- **Live Log Streaming** - View agent output in real-time
 
 ### 🤖 Agent Management
-- **Create & Configure Agents** - Set up new agents with custom models and settings
-- **Agent Templates** - Quick-start templates (Programmer, Tester, Researcher, etc.)
-- **Edit Agent Settings** - Modify model, thinking mode, skills, and identity
-- **Team Management** - Configure team members for each agent
+- **View Agents** - List all configured OpenClaw agents
+- **Create Agents** - Set up new agents with templates
+- **Edit Agents** - Modify agent settings (model, thinking, skills)
+- **Agent Files** - Manage AGENTS.md, SOUL.md, TEAM.md per agent
 
-### 📁 Project & Task Management
-- **Project Creation** - Create and manage projects with dedicated workspaces
-- **Task Queue System** - Automated task assignment and execution
-- **Role-Based Assignment** - Assign tasks to specific agent roles
-- **Task Status Tracking** - Visual kanban board for task management
-- **Project Memory** - Persistent memory per project
+### 🔧 Git Integration
+- **Pull Git** - Create tasks to pull latest code from repositories
+- **Commit/Push** - Git operations through the dashboard UI
+- **GitHub OAuth** - Secure authentication for GitHub operations
+- **Repository Cloning** - Clone repos when creating projects
 
-### 🛠️ Workspace Management
-- **File Editor** - Edit AGENTS.md, SOUL.md, TEAM.md, USER.md, MEMORY.md
-- **Config Editor** - View and modify openclaw.json
-- **Auto-backup** - Automatic backups before changes
-- **Protected Files** - Safety measures for critical files
-
-### ⚡ Advanced Features
-- **Rate Limiting** - Built-in API rate limiting for security
-- **Input Validation** - Zod-based schema validation
-- **Real-time Updates** - Auto-refresh for active tasks
-- **Dark Theme** - Cyberpunk-inspired dark UI
+### ⚙️ Settings & Configuration
+- **Git Authentication** - Configure GitHub OAuth or PAT
+- **System Settings** - Gateway connection, preferences
+- **Workspace Editor** - Edit OpenClaw configuration files
 
 ## 🚀 Quick Start
 
@@ -44,36 +41,10 @@ A comprehensive, futuristic dashboard for monitoring and managing your OpenClaw 
 - OpenClaw gateway running (default: http://localhost:18789)
 - Gateway token for authentication
 
-### GitHub OAuth Setup (Optional)
-
-To use OAuth authentication instead of Personal Access Tokens:
-
-1. **Create a GitHub OAuth App:**
-   - Go to https://github.com/settings/developers
-   - Click "New OAuth App"
-   - Set **Application name**: "OpenClaw Dashboard" (or your preference)
-   - Set **Homepage URL**: `http://localhost:3456`
-   - Set **Authorization callback URL**: `http://localhost:3456/api/auth/github/callback`
-   - Click "Register application"
-
-2. **Copy credentials to .env.local:**
-   ```env
-   GITHUB_CLIENT_ID=your_client_id_here
-   GITHUB_CLIENT_SECRET=your_client_secret_here
-   ```
-
-3. **Restart the dev server** to load the new environment variables
-
-4. **Connect your account:**
-   - Go to Settings → Git Authentication → OAuth
-   - Click "Connect GitHub Account"
-   - Authorize the app on GitHub
-   - Done! Your account is now connected
-
 ### Installation
 
 ```bash
-# Clone or navigate to the dashboard directory
+# Navigate to the dashboard directory
 cd /Users/icue/.openclaw/workspace-coder/dashboard
 
 # Install dependencies
@@ -81,7 +52,7 @@ npm install
 
 # Configure environment
 cp .env.example .env.local
-# Edit .env.local with your settings
+# Edit .env.local with your GATEWAY_TOKEN
 ```
 
 ### Configuration
@@ -93,12 +64,8 @@ Create `.env.local`:
 GATEWAY_URL=http://localhost:18789
 GATEWAY_TOKEN=your-gateway-token-here
 
-# GitHub OAuth (optional - for OAuth authentication)
-GITHUB_CLIENT_ID=your_client_id
-GITHUB_CLIENT_SECRET=your_client_secret
-
 # Optional
-NEXT_PUBLIC_APP_NAME=OpenClaw Dashboard
+PORT=3456
 ```
 
 ### Running
@@ -118,45 +85,38 @@ The dashboard will be available at `http://localhost:3000` (dev) or `http://loca
 
 ```
 dashboard/
+├── data/                      # Dashboard data (projects, tasks, logs)
+│   ├── projects/             # Project workspaces
+│   │   └── {project-id}/
+│   │       ├── PROJECT.json
+│   │       ├── PROJECT.md
+│   │       ├── MEMORY.md
+│   │       └── ...
+│   ├── projects.json         # Project registry
+│   ├── tasks.json            # Task registry
+│   └── task-logs/            # Task execution logs
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── api/               # API endpoints
-│   │   ├── agents/            # Agent management pages
-│   │   ├── projects/          # Project management pages
-│   │   ├── team/              # Team management pages
-│   │   ├── workspace/         # File editor
-│   │   ├── settings/          # Config editor
+│   ├── app/                  # Next.js App Router
+│   │   ├── api/             # API endpoints
+│   │   ├── agents/          # Agent management pages
+│   │   ├── projects/        # Project management pages
+│   │   ├── settings/        # Settings pages
+│   │   └── page.tsx         # Dashboard home
+│   ├── components/          # React components
+│   │   ├── GlassCard.tsx   # Glassmorphism UI component
+│   │   ├── TaskBoard.tsx   # Task kanban board
 │   │   └── ...
-│   ├── components/            # React components
-│   │   ├── GlassCard.tsx     # Glassmorphism card component
-│   │   ├── NeonButton.tsx    # Neon-style buttons
-│   │   ├── TaskBoard.tsx     # Kanban task board
-│   │   └── ...
-│   ├── lib/                   # Utility libraries
-│   │   ├── rateLimit.ts      # Rate limiting
-│   │   ├── store.ts          # Data store
-│   │   ├── taskQueue.ts      # Task queue system
-│   │   └── taskRunner.ts     # Task execution
-│   └── types/                 # TypeScript types
-├── public/                    # Static assets
-├── scripts/                   # Utility scripts
-├── next.config.js            # Next.js configuration
-├── tailwind.config.js        # Tailwind configuration
-└── package.json              # Dependencies
+│   └── lib/                 # Utility libraries
+│       ├── store.ts        # Data persistence
+│       ├── taskQueue.ts    # Task queue management
+│       ├── taskRunner.ts   # Task execution via TaskMan
+│       └── memory.ts       # Project memory management
+├── next.config.js          # Next.js configuration
+├── tailwind.config.js      # Tailwind configuration
+└── package.json            # Dependencies
 ```
 
 ## 🔌 API Endpoints
-
-### Agents
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/agents` | GET | List all agents |
-| `/api/agents` | POST | Create new agent |
-| `/api/agents/[id]` | GET | Get agent details |
-| `/api/agents/[id]` | PUT | Update agent |
-| `/api/agents/[id]` | DELETE | Delete agent |
-| `/api/agents/[id]/team` | GET | Get agent team |
-| `/api/agents/[id]/team` | PUT | Update agent team |
 
 ### Projects
 | Endpoint | Method | Description |
@@ -168,32 +128,31 @@ dashboard/
 | `/api/projects/[id]` | DELETE | Delete project |
 | `/api/projects/[id]/tasks` | GET | List project tasks |
 | `/api/projects/[id]/tasks` | POST | Create new task |
-| `/api/projects/[id]/tasks/[taskId]/start` | POST | Start task |
-| `/api/projects/[id]/tasks/[taskId]/cancel` | POST | Cancel task |
 
-### Team & Spawning
+### Tasks
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/team/roles` | GET | List team roles |
-| `/api/team/roles` | POST | Create role |
-| `/api/team/spawn` | POST | Spawn team member |
-| `/api/team/spawn` | GET | List spawn records |
+| `/api/tasks` | GET | List all tasks |
+| `/api/tasks?projectId=x` | GET | Filter by project |
+| `/api/tasks?status=x` | GET | Filter by status |
+
+### Agents
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/agents` | GET | List all agents |
+| `/api/agents` | POST | Create new agent |
+| `/api/agents/[id]` | GET | Get agent details |
+| `/api/agents/[id]` | PUT | Update agent |
+| `/api/agents/[id]` | DELETE | Delete agent |
 
 ### System
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/api/status` | GET | Gateway status |
-| `/api/config` | GET/PUT/PATCH | Config management |
+| `/api/config` | GET/PUT | Config management |
 | `/api/logs` | GET | Read logs |
 | `/api/sessions` | GET | List sessions |
 | `/api/nodes` | GET | List nodes |
-
-### GitHub OAuth
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/auth/github` | GET | Check OAuth configuration |
-| `/api/auth/github` | POST | Initiate OAuth flow |
-| `/api/auth/github/callback` | GET | Handle OAuth callback |
 
 ### Settings
 | Endpoint | Method | Description |
@@ -203,36 +162,53 @@ dashboard/
 | `/api/settings/git-auth` | DELETE | Clear credentials |
 | `/api/settings/git-auth/test` | POST | Test connection |
 
-### Cron
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/cron/process-tasks` | POST | Process task queue |
-| `/api/cron/process-tasks` | GET | Get queue status |
-| `/api/cron/process-tasks` | PUT | Update queue config |
+## 🔄 Task Execution Flow
 
-## 🔒 Security Features
+```
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│   Dashboard │────▶│   TaskMan    │────▶│   Worker    │
+│   (Next.js) │     │   (Agent)    │     │  (Subagent) │
+└─────────────┘     └──────────────┘     └─────────────┘
+       │                    │                    │
+       │                    │                    ▼
+       │                    │             Creates files
+       │                    │                    │
+       │                    ▼                    │
+       │             Spawns via           ┌─────────────┐
+       │             sessions_spawn       │   Project   │
+       │                                  │   Files     │
+       │                                  └─────────────┘
+       │                                          │
+       │                    ┌─────────────────────┘
+       │                    │
+       ▼                    ▼
+┌─────────────────────────────────────────┐
+│     Status Detector (Every 10s)         │
+│  - Checks task log files                │
+│  - Updates task status                  │
+└─────────────────────────────────────────┘
+```
 
-### OAuth Security
-- **CSRF Protection**: State parameter verification on OAuth callbacks
-- **Token Encryption**: All tokens encrypted with AES-256-GCM
-- **Short-lived States**: OAuth states expire after 10 minutes
-- **Secure Storage**: Credentials stored in macOS Keychain (or encrypted file fallback)
+### How Tasks Work
 
-### Rate Limiting
-- Spawn endpoint: 5 requests per minute
-- GET requests: 30 requests per minute
-- Automatic cleanup of rate limit entries
+1. **Create Task** - User creates task via UI/API
+2. **Auto-Start** - Task immediately goes to `processing` status
+3. **TaskMan Spawn** - TaskMan agent is called via `openclaw agent --agent taskman`
+4. **Worker Spawn** - TaskMan spawns worker sub-agent(s) via `sessions_spawn`
+5. **Log Streaming** - Workers write logs to `data/task-logs/{taskId}.json`
+6. **Status Detection** - Status detector checks logs every 10s
+7. **Completion** - Task marked `completed` when worker finishes
 
-### Input Validation
-- Zod schema validation on all inputs
-- Path sanitization to prevent directory traversal
-- String length limits on all text inputs
-- Alphanumeric validation for IDs
+### Multi-Agent Configuration
 
-### File Path Security
-- All file paths sanitized with `path.basename()`
-- Restricted to workspace directory
-- Protected files cannot be deleted
+When creating a task, you can configure:
+- **Agent Count**: 1-5 agents
+- **Thinking Levels**: 1-5 per agent
+  - Level 1: Quick responses
+  - Level 2: Light reasoning
+  - Level 3: Medium (default)
+  - Level 4: Deep reasoning
+  - Level 5: Maximum depth
 
 ## 🎨 Customization
 
@@ -255,6 +231,14 @@ Available variants: `default`, `cyan`, `purple`, `pink`, `green`, `yellow`
 
 ## 🚢 Deployment
 
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DASHBOARD_DATA_DIR` | Path to data directory | `./data` |
+| `PORT` | Server port | `3000` (dev), `3456` (prod) |
+| `NODE_ENV` | Environment mode | `development` |
+
 ### Docker
 
 ```dockerfile
@@ -275,56 +259,45 @@ npm run build
 pm2 start npm --name "openclaw-dashboard" -- start
 ```
 
-### Vercel
+## 📝 Data Storage
+
+All data is stored in JSON files in the `data/` directory:
+
+- `projects.json` - Project registry
+- `tasks.json` - Task records
+- `projects/{id}/` - Individual project workspaces
+- `task-logs/{id}.json` - Task execution logs
+
+This makes the system portable and easy to backup:
 
 ```bash
-npm i -g vercel
-vercel
+# Backup
+zip -r dashboard-backup-$(date +%Y%m%d).zip data/
+
+# Restore
+unzip dashboard-backup-20240218.zip
 ```
-
-## 📝 Workspace Files
-
-| File | Purpose |
-|------|---------|
-| `AGENTS.md` | Agent behavior instructions |
-| `SOUL.md` | Core personality definition |
-| `TEAM.md` | Team member profiles and spawn prompts |
-| `USER.md` | User preferences and context |
-| `MEMORY.md` | Long-term memory storage |
-| `TOOLS.md` | Tool configurations |
-| `IDENTITY.md` | Agent identity settings |
-| `HEARTBEAT.md` | Periodic task definitions |
 
 ## ⚠️ Troubleshooting
 
 ### Gateway Connection Failed
 - Verify `GATEWAY_URL` is correct
-- Check if gateway is running
+- Check if gateway is running: `openclaw gateway status`
 - Ensure `GATEWAY_TOKEN` is valid
 
-### Permission Errors
-- Ensure write access to workspace directory
-- Check file permissions for config files
-
-### Rate Limit Errors
-- Wait for rate limit window to reset
-- Check rate limit headers in response
+### Tasks Not Starting
+- Check TaskMan agent exists: `openclaw agent list`
+- Verify `openclaw` CLI is in PATH
+- Check task logs in `data/task-logs/`
 
 ### Build Errors
 - Clear `.next` directory: `rm -rf .next`
 - Reinstall dependencies: `rm -rf node_modules && npm install`
 - Run type check: `npx tsc --noEmit`
 
-## 🗺️ Roadmap
-
-- [ ] WebSocket support for real-time updates
-- [ ] Multi-gateway support
-- [ ] Advanced analytics and metrics
-- [ ] Custom dashboard widgets
-- [ ] Agent performance analytics
-- [ ] Batch operations
-- [ ] Export/import functionality
-- [ ] Mobile app companion
+### Permission Errors
+- Ensure write access to `data/` directory
+- Check file permissions for config files
 
 ## 📄 License
 
@@ -333,5 +306,3 @@ MIT License - See LICENSE file for details
 ---
 
 Built with ❤️ for OpenClaw
-
-**Ready for Cody to use in the morning!** 🚀

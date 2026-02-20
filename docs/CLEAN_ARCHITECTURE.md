@@ -1,6 +1,6 @@
-# OpenClaw OpenTask - Clean Task System
+# Clean Architecture - OpenTask
 
-## Architecture (Simplified)
+## Current System (Simplified)
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
@@ -22,7 +22,7 @@
        ▼                    ▼
 ┌─────────────────────────────────────────┐
 │     Status Detector (Every 10s)         │
-│  - Checks for new files in project      │
+│  - Checks task log files                │
 │  - Updates task status                  │
 └─────────────────────────────────────────┘
 ```
@@ -34,60 +34,98 @@
 POST /api/projects/{id}/tasks
 - Creates task record (status: pending)
 - Triggers TaskMan immediately
+- Status becomes processing
 ```
 
 ### 2. TaskMan Spawns Worker
 ```
 TaskMan receives [DASHBOARD] request
   ↓
-Uses sessions_spawn to create worker
+Uses sessions_spawn to create worker(s)
   ↓
-Worker gets simple context:
+Worker gets context:
   - Task description
   - Project path
-  - Instructions to write status file
+  - Instructions to write to log file
 ```
 
 ### 3. Worker Does Work
 ```
 Worker:
-1. Reads project memory
-2. Creates files
-3. Writes status file: {taskId}-status.json
-4. Updates project memory
+1. Reads project memory (MEMORY.md)
+2. Does the work
+3. Writes logs to data/task-logs/{taskId}.json
+4. Updates log.status when complete
 ```
 
 ### 4. Status Detector
 ```
 Every 10 seconds:
-1. Check {taskId}-status.json
-2. If status=completed → mark task done
-3. If no status file but files exist → check file timestamps
+1. Check data/task-logs/{taskId}.json
+2. Read log.status field
+3. Update tasks.json status if changed
 ```
 
 ## File Structure
 
 ```
 data/
-├── projects/{projectId}/
-│   ├── MEMORY.md
-│   └── [created files]
-└── task-status/
-    └── {taskId}-status.json
+├── projects.json          # Project registry
+├── tasks.json             # Task registry
+├── task-logs/             # Task execution logs
+│   └── {taskId}.json     # Individual task logs
+└── projects/              # Project workspaces
+    └── {projectId}/
+        ├── PROJECT.json
+        ├── PROJECT.md
+        ├── MEMORY.md
+        └── ...
 ```
 
-## Status File Format
+## Log File Format
 
 ```json
 {
-  "percentage": 100,
+  "taskId": "task-xxx",
+  "projectId": "project-xxx",
+  "title": "Task Title",
   "status": "completed",
-  "message": "Created story.md",
-  "result": "Full summary here...",
-  "artifacts": ["story.md"],
-  "timestamp": "2026-02-20T02:00:00Z"
+  "logs": [
+    {"timestamp": "...", "level": "info", "message": "..."}
+  ],
+  "result": "Summary",
+  "artifacts": ["file1.md"]
 }
 ```
+
+## Multi-Agent Tasks
+
+Tasks support spawning 1-5 agents with different thinking levels:
+
+```
+Agent 1: Level 5 (Maximum) - Lead/Coordination
+Agent 2: Level 3 (Medium)  - Research/Analysis
+Agent 3: Level 2 (Light)   - Implementation
+...
+```
+
+Thinking levels:
+- 1: Quick - Fast responses
+- 2: Light - Standard reasoning  
+- 3: Medium - Balanced
+- 4: Deep - Thorough analysis
+- 5: Maximum - Deep reasoning
+
+## Key Components
+
+| File | Purpose |
+|------|---------|
+| `src/lib/store.ts` | JSON file persistence |
+| `src/lib/taskQueue.ts` | Task creation/status |
+| `src/lib/taskRunner.ts` | Execute via TaskMan |
+| `src/lib/taskLogger.ts` | Log file management |
+| `src/lib/statusDetector.ts` | Background status checks |
+| `src/lib/memory.ts` | Project memory read/write |
 
 ## Removed Components
 
@@ -96,11 +134,13 @@ data/
 - ❌ Zombie cleanup with 10min timeout
 - ❌ Multiple progress tracking methods
 - ❌ Complex context with many instructions
+- ❌ Pipeline system
+- ❌ Worker Pool
 
 ## Kept Components
 
 - ✅ Simple API endpoints
 - ✅ TaskMan as coordinator
 - ✅ sessions_spawn for workers
-- ✅ File-based status tracking
-- ✅ Simple file detector
+- ✅ File-based log tracking
+- ✅ Status detector polling

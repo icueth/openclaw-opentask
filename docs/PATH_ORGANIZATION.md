@@ -1,49 +1,66 @@
-# Path Organization Summary
+# Path Organization
+
+## Overview
+
+The dashboard stores all data in a single `data/` directory, separate from OpenClaw Core workspaces.
 
 ## Directory Structure
 
-### Dashboard Data (Project/Task Data)
 ```
-/Users/icue/.openclaw/workspace-coder/dashboard/data/
-├── projects/              # Project workspaces
-│   ├── project-a/
-│   ├── project-b/
-│   └── ...
-├── task-contexts/         # Task session data
-│   ├── task-xxx/
-│   └── ...
-├── projects.json          # Store
-├── tasks.json             # Store
-└── agents.json            # Store
-```
-
-### OpenClaw Core (Agent Workspaces)
-```
-/Users/icue/.openclaw/
-├── workspace/             # Main agent (Omsin)
-├── workspace-coder/       # Coder agent (Nova)
-│   └── dashboard/         # Dashboard app
-└── workspace-coordinator/ # Coordinator agent
+dashboard/
+├── data/                      # Dashboard data (this is the important part)
+│   ├── projects/             # Project workspaces
+│   │   └── {project-id}/
+│   │       ├── PROJECT.json
+│   │       ├── PROJECT.md
+│   │       ├── MEMORY.md
+│   │       └── ...
+│   ├── projects.json         # Project registry
+│   ├── tasks.json            # Task registry
+│   └── task-logs/            # Task execution logs
+│       └── {task-id}.json
+├── src/                      # Source code
+├── next.config.js
+└── ...
 ```
 
-## Path Configuration (`src/lib/paths.ts`)
+## Data Storage
 
-| Variable | Purpose |
-|----------|---------|
-| `DASHBOARD_DATA_DIR` | Dashboard data root (env or ./data) |
-| `DASHBOARD_PATHS.projects` | Project workspaces |
-| `DASHBOARD_PATHS.taskContexts` | Task session data |
-| `OPENCLAW_WORKSPACES` | Agent workspaces (separate) |
+All dashboard data lives in `data/`:
 
-## Key Changes
+| Path | Purpose |
+|------|---------|
+| `data/projects.json` | Project registry (JSON) |
+| `data/tasks.json` | Task registry (JSON) |
+| `data/projects/{id}/` | Individual project workspaces |
+| `data/task-logs/{id}.json` | Task execution logs |
 
-1. **Dashboard projects** → Stored in `dashboard/data/projects/`
-2. **Task contexts** → Stored in `dashboard/data/task-contexts/`
-3. **OpenClaw workspaces** → Stay in `.openclaw/workspace*/`
-4. **No mixing** of paths between Dashboard and OpenClaw Core
+## Environment Variable
 
-## API Endpoints
+Override the default data location:
 
-- `GET /api/admin/subagents` - List sub-agents
-- `POST /api/admin/subagents` - Steer/kill sub-agents
-- `POST /api/tasks-v2` - Create task (sessions_spawn style)
+```bash
+export DASHBOARD_DATA_DIR=/custom/path/to/data
+```
+
+## Code Usage
+
+```typescript
+import { store } from '@/lib/store'
+
+// Projects are automatically stored in data/projects.json
+const projects = store.getProjects()
+
+// Project workspaces are in data/projects/{id}/
+const projectPath = project.workspace
+```
+
+## Backup
+
+Simply backup the entire `data/` directory:
+
+```bash
+cp -r data data-backup-$(date +%Y%m%d)
+# or
+zip -r backup.zip data/
+```

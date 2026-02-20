@@ -1,29 +1,13 @@
 # OpenClaw Dashboard - Setup Guide
 
-Complete step-by-step installation and configuration guide for the OpenClaw Dashboard.
-
-## Table of Contents
-1. [Prerequisites](#prerequisites)
-2. [Installation](#installation)
-3. [Configuration](#configuration)
-4. [First Run](#first-run)
-5. [Creating Your First Project](#creating-your-first-project)
-6. [Creating Your First Task](#creating-your-first-task)
-7. [Troubleshooting](#troubleshooting)
-
----
+Complete step-by-step installation and configuration guide.
 
 ## Prerequisites
 
 ### Required Software
 - **Node.js** 18.x or higher ([Download](https://nodejs.org/))
 - **npm** 9.x or higher (comes with Node.js)
-- **OpenClaw Gateway** running ([Installation Guide](https://docs.openclaw.io))
-
-### System Requirements
-- macOS, Linux, or Windows (WSL2 recommended)
-- 2GB RAM minimum (4GB recommended)
-- 1GB free disk space
+- **OpenClaw Gateway** running
 
 ### Verify Prerequisites
 
@@ -41,8 +25,6 @@ openclaw gateway status
 # Should show: Gateway is running
 ```
 
----
-
 ## Installation
 
 ### Step 1: Navigate to Dashboard Directory
@@ -57,15 +39,6 @@ cd /Users/icue/.openclaw/workspace-coder/dashboard
 npm install
 ```
 
-This will install:
-- Next.js 14
-- React 18
-- TypeScript
-- Tailwind CSS
-- Zod (validation)
-- Recharts (charts)
-- Lucide React (icons)
-
 Expected output:
 ```
 added 145 packages, and audited 145 packages in 15s
@@ -78,8 +51,6 @@ added 145 packages, and audited 145 packages in 15s
 npx next --version
 # Should output: 14.x.x
 ```
-
----
 
 ## Configuration
 
@@ -107,17 +78,14 @@ Or check your `~/.openclaw/openclaw.json` file for the token.
 
 ### Step 3: Edit Environment Variables
 
-Open `.env.local` in your favorite editor:
+Open `.env.local`:
 
 ```bash
 # Using VS Code
 code .env.local
 
-# Using nano
+# Or any text editor
 nano .env.local
-
-# Using vim
-vim .env.local
 ```
 
 Add the following:
@@ -127,22 +95,9 @@ Add the following:
 GATEWAY_URL=http://localhost:18789
 GATEWAY_TOKEN=your-actual-gateway-token-here
 
-# Optional: App customization
-NEXT_PUBLIC_APP_NAME=OpenClaw Dashboard
-
 # Optional: Custom port for production
 PORT=3456
 ```
-
-### Step 4: Save and Verify
-
-Save the file and verify it's readable:
-
-```bash
-cat .env.local
-```
-
----
 
 ## First Run
 
@@ -154,28 +109,18 @@ npm run dev
 
 Expected output:
 ```
-> openclaw-dashboard@1.0.0 dev
+> openclaw-opentask@1.0.0 dev
 > next dev
 
   ▲ Next.js 14.2.x
   - Local:        http://localhost:3000
-  - Environments: .env.local
 
   Ready in 2.5s
 ```
 
 Open your browser to: **http://localhost:3000**
 
-### Verify Dashboard Works
-
-1. You should see the dashboard loading screen
-2. After a few seconds, the main dashboard appears
-3. Check that:
-   - Gateway status shows "Connected" (green dot)
-   - No red error banners appear
-   - Sidebar navigation is visible
-
-### Production Mode (For deployment)
+### Production Mode
 
 ```bash
 # Build the application
@@ -187,66 +132,16 @@ npm run start
 
 Production server runs on: **http://localhost:3456**
 
----
+### Verify Dashboard Works
 
-## Configuring OpenClaw Gateway
-
-### Ensure Gateway is Running
-
-```bash
-openclaw gateway status
-```
-
-If not running:
-
-```bash
-openclaw gateway start
-```
-
-### Verify API Access
-
-Test the gateway API:
-
-```bash
-curl http://localhost:18789/api/status \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-Should return JSON with gateway status.
-
-### Enable Required Features
-
-Edit `~/.openclaw/openclaw.json`:
-
-```json
-{
-  "gateway": {
-    "enabled": true,
-    "port": 18789,
-    "token": "your-token"
-  },
-  "agents": {
-    "enabled": true,
-    "defaults": {
-      "model": {
-        "primary": "kimi-coding/k2p5"
-      }
-    }
-  }
-}
-```
-
-Restart gateway after changes:
-
-```bash
-openclaw gateway restart
-```
-
----
+1. You should see the dashboard loading
+2. Gateway status shows "Connected" (green dot)
+3. No red error banners appear
+4. Sidebar navigation is visible
 
 ## Creating Your First Project
 
-### Method 1: Using the Dashboard UI
+### Using the Dashboard UI
 
 1. Navigate to **http://localhost:3000/projects**
 2. Click the **"+ New Project"** button
@@ -256,7 +151,7 @@ openclaw gateway restart
    - **Description**: `Learning OpenClaw Dashboard`
 4. Click **Create Project**
 
-### Method 2: Using the API
+### Using the API
 
 ```bash
 curl -X POST http://localhost:3000/api/projects \
@@ -272,9 +167,7 @@ curl -X POST http://localhost:3000/api/projects \
 
 The project should appear in:
 - Dashboard project list
-- File system at `~/.openclaw/workspace/projects/my-first-project/`
-
----
+- File system at `data/projects/my-first-project/`
 
 ## Creating Your First Task
 
@@ -290,15 +183,15 @@ The project should appear in:
    - **Title**: `Hello World Task`
    - **Description**: `Create a simple hello world program`
    - **Priority**: `Medium`
-   - **Role**: Select an available role (or leave blank for auto-assign)
-3. Check **"Auto-start task after creation"**
-4. Click **Create Task**
+   - **Agent Count**: 1 (or more for multi-agent)
+   - **Thinking Level**: 3 (Medium)
+3. Click **Create Task**
 
 ### Step 3: Monitor Task Execution
 
 1. You'll be redirected to the task board
 2. Watch the task move through statuses:
-   - `created` → `pending` → `active` → `processing` → `completed`
+   - `pending` → `processing` → `completed`
 3. Click on the task card to see details
 4. View logs in the **Logs** section
 
@@ -308,50 +201,39 @@ After completion:
 1. Task status shows `completed`
 2. Click task to view:
    - Result/output
-   - Any artifacts generated
    - Execution logs
+   - Any artifacts generated
 
----
+## Multi-Agent Tasks
 
-## Creating Team Roles
+To use multiple agents on a task:
 
-### Why Create Roles?
+1. When creating a task, set **Agent Count** (1-5)
+2. Each agent can have a different **Thinking Level**:
+   - Level 1: Quick - Fast responses
+   - Level 2: Light - Standard reasoning
+   - Level 3: Medium - Balanced (default)
+   - Level 4: Deep - Thorough analysis
+   - Level 5: Maximum - Deep reasoning
 
-Roles define specialized agents that can be spawned for specific tasks:
-- **Coder**: For programming tasks
-- **Researcher**: For research and analysis
-- **Reviewer**: For code review
-- **Designer**: For UI/UX tasks
+The TaskMan agent will coordinate the multiple workers.
 
-### Create a Role
+## GitHub Integration
 
-1. Go to **Team** → **Manage Roles**
-2. Click **"New Role"**
-3. Fill in:
-   - **Role ID**: `coder` (lowercase, no spaces)
-   - **Name**: `Software Developer`
-   - **Description**: `Expert in writing clean, efficient code`
-   - **Thinking Mode**: `high` (for complex reasoning)
-   - **System Prompt**: Detailed instructions for this role
-4. Click **Create Role**
+### Clone Repository on Project Creation
 
-### Example System Prompt
+1. When creating a project, enter a GitHub URL:
+   - Example: `https://github.com/username/repo`
+2. The repository will be cloned into the project workspace
+3. PROJECT.md will be auto-populated with repo info
 
-```markdown
-You are an expert software developer specializing in:
-- Clean, maintainable code
-- Best practices and design patterns
-- Comprehensive documentation
-- Unit testing
+### Git Authentication
 
-Always:
-1. Write code with clear comments
-2. Follow language conventions
-3. Include error handling
-4. Provide usage examples
-```
-
----
+1. Go to **Settings** → **Git Authentication**
+2. Choose authentication method:
+   - **OAuth**: Click "Connect GitHub Account"
+   - **PAT**: Enter Personal Access Token
+3. Test connection
 
 ## Troubleshooting
 
@@ -392,7 +274,26 @@ npx tsc --noEmit
    curl http://localhost:18789/api/status
    ```
 
-4. Check firewall/network settings
+### Tasks Not Executing
+
+**Problem**: Tasks stay in "pending" status
+
+**Solutions**:
+1. Check TaskMan agent exists:
+   ```bash
+   openclaw agent list
+   ```
+
+2. Verify `openclaw` CLI is in PATH:
+   ```bash
+   which openclaw
+   ```
+
+3. Check task logs:
+   ```bash
+   ls data/task-logs/
+   cat data/task-logs/{task-id}.json
+   ```
 
 ### Can't Create Projects
 
@@ -401,7 +302,7 @@ npx tsc --noEmit
 **Solutions**:
 1. Check write permissions:
    ```bash
-   ls -la ~/.openclaw/workspace/projects/
+   ls -la data/
    ```
 
 2. Verify disk space:
@@ -409,27 +310,7 @@ npx tsc --noEmit
    df -h
    ```
 
-3. Check for invalid project ID (must be lowercase, alphanumeric with hyphens)
-
-### Tasks Not Executing
-
-**Problem**: Tasks stay in "pending" or "created" status
-
-**Solutions**:
-1. Check task queue processor is running:
-   ```bash
-   curl http://localhost:3000/api/cron/process-tasks
-   ```
-
-2. Manually trigger processing:
-   ```bash
-   curl -X POST http://localhost:3000/api/cron/process-tasks
-   ```
-
-3. Check role exists:
-   ```bash
-   curl http://localhost:3000/api/team/roles
-   ```
+3. Check for invalid project ID (lowercase, alphanumeric with hyphens)
 
 ### Port Already in Use
 
@@ -447,24 +328,20 @@ kill -9 <PID>
 npm run dev -- --port 3001
 ```
 
----
-
 ## Next Steps
 
 Now that you have the dashboard running:
 
 1. **Explore the UI** - Click around and get familiar with all sections
 2. **Create More Projects** - Organize your work into projects
-3. **Set Up Team Roles** - Define specialized agents for different tasks
-4. **Try Spawning** - Use the team spawn feature to create sub-agents
-5. **Customize** - Edit workspace files (AGENTS.md, SOUL.md, etc.)
+3. **Try Multi-Agent Tasks** - Use multiple agents for complex tasks
+4. **Set Up Git** - Configure GitHub integration
 
 ## Getting Help
 
 - **Documentation**: Check `README.md` for detailed API docs
-- **Logs**: View logs in the dashboard or at `~/.openclaw/logs/`
+- **Logs**: View logs in the dashboard or at `data/task-logs/`
 - **Issues**: Check the GitHub issues page
-- **Community**: Join the OpenClaw Discord
 
 ---
 
