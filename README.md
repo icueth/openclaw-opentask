@@ -307,4 +307,4 @@ MIT License - See LICENSE file for details
 
 Built with ❤️ for OpenClaw
 
-**by iCue** · [☕ Buy me a coffee](https://www.buymeacoffee.com/icue) · [🐙 GitHub](https://github.com/icue)
+**by iCue** · [☕ Buy me a coffee](https://buy.stripe.com/14A28sbLa5mJ8SM5qY2VG01) · [🐙 GitHub](https://github.com/icue)
